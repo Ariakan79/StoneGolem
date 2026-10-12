@@ -27,7 +27,7 @@ Starten mit `./gradlew :fabric:runClient` bzw. `./gradlew :neoforge:runClient`, 
 - [ ] Ruhend: bewegt sich nicht, dreht den Kopf nicht, macht keine Geräusche (Untertitel bleiben leer)
 - [ ] `/gamemode survival`, Golem schlagen → Aufstehanimation (~1,25 s), Untertitel „Steingolem erwacht“
 - [ ] Während des Aufstehens: weitere Treffer machen keinen Schaden (keine rote Färbung)
-- [ ] Größe: etwa wie ein Eisengolem (zum Vergleich `/summon minecraft:iron_golem` daneben)
+- [ ] Größe: stehend ~5,4 Blöcke, doppelt so hoch wie ein Eisengolem (zum Vergleich `/summon minecraft:iron_golem` daneben); ruhend ein ~3 Blöcke hoher Felsbrocken, Hitbox (F3+B) wächst beim Aufstehen mit
 - [ ] Danach: langsam, folgt dir; Bodenschlag: beide Fäuste hoch, Aufprall vor ihm mit Staubwolke, ~4 Herzen ohne Rüstung (Normal), weicht man in der Ausholphase zurück, geht er ins Leere
 - [ ] Zweiter Spieler bzw. andere Mobs werden ignoriert (neutral, nur der Angreifer ist Ziel)
 - [ ] Neuen ruhenden Golem setzen, im Umkreis von ≤ 4 Blöcken **Stein oder Erz** abbauen → er erwacht, greift aber nicht an; Holz/Erde abbauen → nichts
@@ -66,7 +66,7 @@ Starten mit `./gradlew :fabric:runClient` bzw. `./gradlew :neoforge:runClient`, 
 ```
 Im Log steht dann `Spawn weight override active: 500`.
 - [ ] Neue Welt, Überlebensmodus, `/effect give @s minecraft:night_vision infinite`
-- [ ] Höhle unter Y 40 erkunden → Golems stehen ruhend auf Stein (nie auf Erde/Gras)
+- [ ] Höhle unter Y 40 erkunden → Golems stehen ruhend auf Stein (nie auf Erde/Gras); wegen der Größe nur in Höhlen mit ≥ 6 Blöcken Platz
 - [ ] `/locate biome minecraft:stony_peaks`, hinteleportieren → Golems auch an der Oberfläche auf Stein
 - [ ] In einem Ebenen-/Waldbiom an der Oberfläche → keine Golems
 - [ ] Nie mehr als einer pro Gruppe

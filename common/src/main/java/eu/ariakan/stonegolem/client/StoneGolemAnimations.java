@@ -22,13 +22,14 @@ import static eu.ariakan.stonegolem.client.StoneGolemModel.RIGHT_LEG;
  */
 public final class StoneGolemAnimations {
 
-    // The crouched boulder pose, shared by the dormant, awaken and settle animations.
-    private static final float[] DORMANT_BODY_POS = {0.0F, -8.0F, 0.0F};
-    private static final float[] DORMANT_BODY_ROT = {15.0F, 0.0F, 0.0F};
-    private static final float[] DORMANT_HEAD_POS = {0.0F, -1.0F, 1.0F};
-    private static final float[] DORMANT_HEAD_ROT = {30.0F, 0.0F, 0.0F};
-    private static final float[] DORMANT_RIGHT_ARM_ROT = {-55.0F, 0.0F, -10.0F};
-    private static final float[] DORMANT_LEFT_ARM_ROT = {-55.0F, 0.0F, 10.0F};
+    // The crouched boulder pose, shared by the dormant, awaken and settle animations: the body sinks over the legs and
+    // the long arms hang down beside it, their lower ends hidden in the ground.
+    private static final float[] DORMANT_BODY_POS = {0.0F, -20.0F, 0.0F};
+    private static final float[] DORMANT_BODY_ROT = {25.0F, 0.0F, 0.0F};
+    private static final float[] DORMANT_HEAD_POS = {0.0F, -2.0F, 2.0F};
+    private static final float[] DORMANT_HEAD_ROT = {35.0F, 0.0F, 0.0F};
+    private static final float[] DORMANT_RIGHT_ARM_ROT = {-20.0F, 0.0F, -6.0F};
+    private static final float[] DORMANT_LEFT_ARM_ROT = {-20.0F, 0.0F, 6.0F};
 
     public static final AnimationDefinition WALK = AnimationDefinition.Builder.withLength(1.5F).looping()
             .addAnimation(RIGHT_LEG, rotation(
@@ -58,8 +59,8 @@ public final class StoneGolemAnimations {
             .addAnimation(BODY, position(
                     hold(DORMANT_BODY_POS, 0.0F),
                     hold(DORMANT_BODY_POS, 0.4F),
-                    key(0.8F, 0.0F, -3.0F, 0.0F),
-                    key(1.05F, 0.0F, 1.0F, 0.0F),
+                    key(0.8F, 0.0F, -7.0F, 0.0F),
+                    key(1.05F, 0.0F, 1.5F, 0.0F),
                     key(1.25F, 0.0F, 0.0F, 0.0F)))
             .addAnimation(BODY, rotation(
                     hold(DORMANT_BODY_ROT, 0.0F),
@@ -80,7 +81,7 @@ public final class StoneGolemAnimations {
 
     /** Standing to dormant pose. Ends exactly in the pose held by {@link #DORMANT}. */
     public static final AnimationDefinition SETTLE = AnimationDefinition.Builder.withLength(1.0F)
-            .addAnimation(BODY, position(key(0.0F, 0.0F, 0.0F, 0.0F), key(0.6F, 0.0F, -5.0F, 0.0F), hold(DORMANT_BODY_POS, 1.0F)))
+            .addAnimation(BODY, position(key(0.0F, 0.0F, 0.0F, 0.0F), key(0.6F, 0.0F, -12.0F, 0.0F), hold(DORMANT_BODY_POS, 1.0F)))
             .addAnimation(BODY, rotation(key(0.0F, 0.0F, 0.0F, 0.0F), key(0.6F, 20.0F, 0.0F, 0.0F), hold(DORMANT_BODY_ROT, 1.0F)))
             .addAnimation(HEAD, position(key(0.0F, 0.0F, 0.0F, 0.0F), hold(DORMANT_HEAD_POS, 1.0F)))
             .addAnimation(HEAD, rotation(key(0.0F, 0.0F, 0.0F, 0.0F), hold(DORMANT_HEAD_ROT, 1.0F)))

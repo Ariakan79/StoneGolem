@@ -17,12 +17,14 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -54,6 +56,8 @@ import java.util.List;
 public class StoneGolem extends PathfinderMob {
 
     private static final EntityDataAccessor<Byte> DATA_STATE = SynchedEntityData.defineId(StoneGolem.class, EntityDataSerializers.BYTE);
+    /** Hitbox of the crouched boulder (dormant and settling); standing size comes from the entity type. */
+    private static final EntityDimensions DORMANT_DIMENSIONS = EntityDimensions.scalable(1.8F, 3.0F).withEyeHeight(2.2F);
     private static final Goal.Flag[] AI_FLAGS = {Goal.Flag.MOVE, Goal.Flag.LOOK, Goal.Flag.JUMP, Goal.Flag.TARGET};
 
     // Client-side animation states, driven by the synchronized golem state (see setupAnimationStates).
@@ -152,6 +156,7 @@ public class StoneGolem extends PathfinderMob {
     /** Switches state silently, e.g. when loading from disk. */
     private void applyState(GolemState state) {
         this.entityData.set(DATA_STATE, (byte) state.ordinal());
+        this.refreshDimensions();
         this.stateTicks = 0;
         this.applyStateToAi(state);
         if (!state.isAwake()) {
@@ -407,7 +412,7 @@ public class StoneGolem extends PathfinderMob {
         LivingEntity target = this.slamTarget;
         this.slamTarget = null;
         Vec3 look = Vec3.directionFromRotation(0.0F, this.getYRot());
-        BlockPos impact = BlockPos.containing(this.getX() + look.x * 1.6, this.getY() - 0.5, this.getZ() + look.z * 1.6);
+        BlockPos impact = BlockPos.containing(this.getX() + look.x * 2.0, this.getY() - 0.5, this.getZ() + look.z * 2.0);
         BlockState ground = level.getBlockState(impact);
         level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ground.isAir() ? Blocks.STONE.defaultBlockState() : ground),
                 impact.getX() + 0.5, impact.getY() + 1.1, impact.getZ() + 0.5, 30, 0.5, 0.05, 0.5, 0.15);
@@ -460,10 +465,33 @@ public class StoneGolem extends PathfinderMob {
         return 1.0F;
     }
 
+    // --- Size ---------------------------------------------------------------------------------------------------
+
+    private static boolean isCrouched(GolemState state) {
+        return state == GolemState.DORMANT || state == GolemState.SETTLING;
+    }
+
+    @Override
+    public EntityDimensions getDefaultDimensions(Pose pose) {
+        return isCrouched(this.getState()) ? DORMANT_DIMENSIONS : super.getDefaultDimensions(pose);
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
+        super.onSyncedDataUpdated(accessor);
+        if (DATA_STATE.equals(accessor)) {
+            this.refreshDimensions();
+        }
+    }
+
     // --- Ticking and client animation ---------------------------------------------------------------------------
 
     @Override
     public void tick() {
+        if (this.firstTick) {
+            // The entity type's standing size is applied at construction; switch to the state's size once.
+            this.refreshDimensions();
+        }
         super.tick();
         if (!this.getState().isAwake()) {
             // A boulder does not turn its head.

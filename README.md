@@ -2,7 +2,7 @@
 
 An ancient, sluggish guardian of stone for Minecraft **26.3** — for **Fabric** and **NeoForge**.
 
-It sleeps as a mossy boulder deep in stone caves and on rocky mountain slopes. Hit it, or mine stone or ore right next to it, and it slowly heaves itself up. It stands as tall as an iron golem and is neutral to everyone except whoever attacked it: two-fisted ground slams, a telegraphed stomp that throws everything around it into the air, and from a distance it calls up great rocks under its target that hurl it 8 blocks high before sinking back into the earth. Swords and arrows barely scratch it — bring a pickaxe.
+It sleeps as a mossy boulder deep in stone caves and on rocky mountain slopes. Hit it, or mine stone or ore right next to it, and it slowly heaves itself up. It towers about 5.4 blocks tall, twice an iron golem, and is neutral to everyone except whoever attacked it: two-fisted ground slams, a telegraphed stomp that throws everything around it into the air, and from a distance it calls up great rocks under its target that hurl it 8 blocks high before sinking back into the earth. Swords and arrows barely scratch it — bring a pickaxe.
 
 Free and donation-funded. Code and assets are MIT-licensed (see [LICENSE](LICENSE)).
 

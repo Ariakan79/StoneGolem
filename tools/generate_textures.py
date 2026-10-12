@@ -2,7 +2,7 @@
 """Generates the first-draft textures of the Stone Golem mod.
 
 The output is deliberately simple pixel art meant to be reworked in Blockbench. The UV layout of the entity texture
-matches StoneGolemModel.createBodyLayer(); if you change the model, change BOXES below as well.
+matches StoneGolemModel.createBodyLayer() (128x128); if you change the model, change BOXES below as well.
 
 Usage: python3 tools/generate_textures.py   (requires Pillow; deterministic thanks to a fixed seed)
 """
@@ -24,13 +24,14 @@ GLOW = [(127, 224, 208), (90, 190, 180)]
 
 # name: (u, v, width, height, depth) - must match StoneGolemModel
 BOXES = {
-    "body": (0, 0, 20, 13, 11),
-    "moss": (0, 56, 12, 2, 6),
-    "head": (0, 24, 9, 8, 8),
-    "brow": (36, 56, 9, 2, 1),
-    "arm": (34, 24, 6, 20, 6),
-    "leg": (0, 40, 7, 9, 7),
+    "body": (0, 0, 20, 28, 11),
+    "head": (64, 0, 9, 8, 8),
+    "brow": (64, 16, 9, 2, 1),
+    "moss": (64, 20, 12, 2, 6),
+    "arm": (0, 40, 6, 40, 6),
+    "leg": (24, 40, 7, 20, 7),
 }
+ENTITY_SIZE = 128
 
 
 def faces(u, v, w, h, d):
@@ -84,7 +85,7 @@ def lichen(img, rng, x, y, w, h, count):
 
 def entity_texture():
     rng = random.Random(1337)
-    img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    img = Image.new("RGBA", (ENTITY_SIZE, ENTITY_SIZE), (0, 0, 0, 0))
     for name, (u, v, w, h, d) in BOXES.items():
         for face, (fx, fy, fw, fh) in faces(u, v, w, h, d).items():
             fill_stone(img, rng, fx, fy, fw, fh)
@@ -98,12 +99,12 @@ def entity_texture():
                 if name in ("moss",):
                     moss_cover(img, rng, fx, fy, fw, fh, 0.85)
                 elif name in ("body", "head", "arm", "brow"):
-                    moss_drips(img, rng, fx, fy, fw, fh, 4 if name == "body" else 2)
+                    moss_drips(img, rng, fx, fy, fw, fh, 6 if name == "body" else 3)
                 cracks(img, rng, fx, fy, fw, fh, max(1, fw * fh // 40))
                 lichen(img, rng, fx, fy, fw, fh, max(1, fw * fh // 30))
 
     # Face: deep-set glowing eyes and a mouth slit on the head front (9x8 at u+d, v+d).
-    hx, hy = 0 + 8, 24 + 8
+    hx, hy = 64 + 8, 0 + 8
     for ex in (hx + 2, hx + 6):
         img.putpixel((ex - 1, hy + 3), STONE_DEEP)
         img.putpixel((ex, hy + 3), GLOW[0])
@@ -112,15 +113,15 @@ def entity_texture():
     for mx in range(hx + 2, hx + 7):
         img.putpixel((mx, hy + 6), STONE_DEEP)
 
-    # Chest: a faint glowing seam hinting at the golem core.
+    # Chest: a faint glowing seam hinting at the golem core (body front is 20x28 at u+d, v+d).
     bx, by = 0 + 11, 0 + 11
-    for i, (dx, dy) in enumerate(((9, 4), (10, 5), (10, 6), (9, 7), (10, 8))):
+    for i, (dx, dy) in enumerate(((9, 7), (10, 8), (10, 9), (9, 10), (10, 11), (10, 12), (9, 13))):
         img.putpixel((bx + dx, by + dy), GLOW[i % 2])
 
-    # Knuckles: darker fist at the lower end of the arm front.
-    ax, ay = 34 + 6, 24 + 6
+    # Knuckles: darker fist at the lower end of the arm front (6x40 at u+d, v+d).
+    ax, ay = 0 + 6, 40 + 6
     for px in range(ax, ax + 6):
-        for py in range(ay + 17, ay + 20):
+        for py in range(ay + 36, ay + 40):
             img.putpixel((px, py), STONE_DARK if (px + py) % 2 else STONE_DEEP)
     return img
 
@@ -204,8 +205,8 @@ def icon(entity):
             for py in range(y, y + 8):
                 for px in range(x, x + 8):
                     out.putpixel((px, py), (shade, shade, shade, 255))
-    face = entity.crop((8, 32, 17, 40)).resize((99, 88), Image.NEAREST)
-    brow = entity.crop((37, 57, 46, 59)).resize((99, 22), Image.NEAREST)
+    face = entity.crop((72, 8, 81, 16)).resize((99, 88), Image.NEAREST)
+    brow = entity.crop((65, 17, 74, 19)).resize((99, 22), Image.NEAREST)
     out.alpha_composite(face, (14, 26))
     out.alpha_composite(brow, (14, 18))
     return out

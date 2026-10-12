@@ -11,7 +11,7 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 
 /**
- * Vanilla-API model of the Stone Golem (64x64 texture). Part names match Blockbench conventions so the model can be
+ * Vanilla-API model of the Stone Golem (128x128 texture). Part names match Blockbench conventions so the model can be
  * re-imported, edited and exported again: {@code body} carries {@code head}, {@code left_arm} and {@code right_arm};
  * the legs hang off the root.
  */
@@ -48,37 +48,41 @@ public class StoneGolemModel extends EntityModel<StoneGolemRenderState> {
         this.summonAnimation = StoneGolemAnimations.SUMMON.bake(root);
     }
 
+    /**
+     * 128x128 texture, 54 px tall (ground at y = 24): legs 20, body 28, head on top. Rendered at 1.6x, that makes the
+     * golem about 5.4 blocks tall while staying 2 blocks wide.
+     */
     public static LayerDefinition createBodyLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
         PartDefinition body = root.addOrReplaceChild(BODY, CubeListBuilder.create()
-                        .texOffs(0, 0).addBox(-10.0F, -13.0F, -5.5F, 20.0F, 13.0F, 11.0F)
+                        .texOffs(0, 0).addBox(-10.0F, -28.0F, -5.5F, 20.0F, 28.0F, 11.0F)
                         // Moss cap on the shoulders.
-                        .texOffs(0, 56).addBox(-6.0F, -15.0F, -2.0F, 12.0F, 2.0F, 6.0F),
-                PartPose.offset(0.0F, 15.0F, 0.0F));
+                        .texOffs(64, 20).addBox(-6.0F, -30.0F, -2.0F, 12.0F, 2.0F, 6.0F),
+                PartPose.offset(0.0F, 4.0F, 0.0F));
 
         body.addOrReplaceChild(HEAD, CubeListBuilder.create()
-                        .texOffs(0, 24).addBox(-4.5F, -7.0F, -7.0F, 9.0F, 8.0F, 8.0F)
+                        .texOffs(64, 0).addBox(-4.5F, -7.0F, -7.0F, 9.0F, 8.0F, 8.0F)
                         // Heavy brow ridge.
-                        .texOffs(36, 56).addBox(-4.5F, -5.0F, -8.0F, 9.0F, 2.0F, 1.0F),
-                PartPose.offset(0.0F, -11.0F, -5.0F));
+                        .texOffs(64, 16).addBox(-4.5F, -5.0F, -8.0F, 9.0F, 2.0F, 1.0F),
+                PartPose.offset(0.0F, -26.0F, -5.0F));
 
         body.addOrReplaceChild(RIGHT_ARM, CubeListBuilder.create()
-                        .texOffs(34, 24).addBox(-3.5F, -2.0F, -3.0F, 6.0F, 20.0F, 6.0F),
-                PartPose.offset(-12.5F, -11.0F, 0.0F));
+                        .texOffs(0, 40).addBox(-3.5F, -2.0F, -3.0F, 6.0F, 40.0F, 6.0F),
+                PartPose.offset(-12.5F, -25.0F, 0.0F));
         body.addOrReplaceChild(LEFT_ARM, CubeListBuilder.create()
-                        .texOffs(34, 24).mirror().addBox(-2.5F, -2.0F, -3.0F, 6.0F, 20.0F, 6.0F),
-                PartPose.offset(12.5F, -11.0F, 0.0F));
+                        .texOffs(0, 40).mirror().addBox(-2.5F, -2.0F, -3.0F, 6.0F, 40.0F, 6.0F),
+                PartPose.offset(12.5F, -25.0F, 0.0F));
 
         root.addOrReplaceChild(RIGHT_LEG, CubeListBuilder.create()
-                        .texOffs(0, 40).addBox(-3.5F, 0.0F, -3.5F, 7.0F, 9.0F, 7.0F),
-                PartPose.offset(-5.5F, 15.0F, 0.0F));
+                        .texOffs(24, 40).addBox(-3.5F, 0.0F, -3.5F, 7.0F, 20.0F, 7.0F),
+                PartPose.offset(-5.5F, 4.0F, 0.0F));
         root.addOrReplaceChild(LEFT_LEG, CubeListBuilder.create()
-                        .texOffs(0, 40).mirror().addBox(-3.5F, 0.0F, -3.5F, 7.0F, 9.0F, 7.0F),
-                PartPose.offset(5.5F, 15.0F, 0.0F));
+                        .texOffs(24, 40).mirror().addBox(-3.5F, 0.0F, -3.5F, 7.0F, 20.0F, 7.0F),
+                PartPose.offset(5.5F, 4.0F, 0.0F));
 
-        return LayerDefinition.create(mesh, 64, 64);
+        return LayerDefinition.create(mesh, 128, 128);
     }
 
     @Override

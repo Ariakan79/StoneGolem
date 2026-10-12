@@ -18,9 +18,9 @@ public final class ModEntities {
     public static final Supplier<EntityType<StoneGolem>> STONE_GOLEM = Services.REGISTRAR.register(
             Registries.ENTITY_TYPE, STONE_GOLEM_KEY.identifier().getPath(),
             () -> EntityType.Builder.of(StoneGolem::new, MobCategory.MONSTER)
-                    // About iron golem size; a bit wider than its 1.4 because the body is broader.
-                    .sized(1.8F, 2.7F)
-                    .eyeHeight(2.3F)
+                    // Standing size: twice iron golem height. While dormant StoneGolem shrinks to boulder size.
+                    .sized(1.8F, 5.4F)
+                    .eyeHeight(4.6F)
                     .clientTrackingRange(10)
                     .build(STONE_GOLEM_KEY));
 

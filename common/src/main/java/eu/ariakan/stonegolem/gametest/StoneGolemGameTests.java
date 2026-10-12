@@ -38,7 +38,7 @@ import java.util.function.Consumer;
  * <p>
  * Husks serve as dummy targets because, unlike zombies, they do not burn in daylight (fire damage would fake hits).
  * <p>
- * Tests run in {@code stonegolem:arena} (9x6x9, stone floor, barrier ceiling) unless they need room to fly:
+ * Tests run in {@code stonegolem:arena} (9x8x9, stone floor, barrier ceiling) unless they need room to fly:
  * those use {@code stonegolem:arena_large} (17x12x17) with sky access.
  */
 public final class StoneGolemGameTests {
@@ -100,6 +100,7 @@ public final class StoneGolemGameTests {
                 .thenExecute(() -> {
                     assertState(helper, golem, GolemState.DORMANT);
                     helper.assertTrue(golem.getTarget() == null, "dormant golem must not have a target");
+                    helper.assertValueEqual(golem.getBbHeight(), 3.0F, "dormant hitbox height");
                     helper.assertTrue(golem.position().subtract(start[0]).horizontalDistance() < 0.01, "dormant golem must not move: " + start[0] + " -> " + golem.position());
                 })
                 .thenSucceed();
@@ -128,6 +129,7 @@ public final class StoneGolemGameTests {
                     helper.assertValueEqual(golem.getHealth(), health[0], "health while awakening");
                 })
                 .thenWaitUntil(() -> assertState(helper, golem, GolemState.ACTIVE))
+                .thenExecute(() -> helper.assertValueEqual(golem.getBbHeight(), 5.4F, "standing hitbox height"))
                 .thenWaitUntil(() -> helper.assertTrue(golem.getTarget() == attacker, "attacker must become the target"))
                 .thenSucceed();
     }

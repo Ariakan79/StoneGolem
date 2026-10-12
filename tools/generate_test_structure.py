@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Generates the game-test arenas (stone floor, air above):
-data/stonegolem/structure/arena.nbt (9x6x9) and arena_large.nbt (17x12x17, for launch tests).
+data/stonegolem/structure/arena.nbt (9x8x9) and arena_large.nbt (17x12x17, for launch tests).
 
 Usage: python3 tools/generate_test_structure.py   (standard library only)
 """
@@ -10,7 +10,7 @@ from pathlib import Path
 
 OUT_DIR = Path(__file__).resolve().parent.parent / "common/src/main/resources/data/stonegolem/structure"
 DATA_VERSION = 5023  # Minecraft 26.3; the game upgrades older structures through DataFixerUpper anyway.
-ARENAS = {"arena": (9, 6, 9), "arena_large": (17, 12, 17)}
+ARENAS = {"arena": (9, 8, 9), "arena_large": (17, 12, 17)}
 
 TAG_END, TAG_INT, TAG_STRING, TAG_LIST, TAG_COMPOUND = 0, 3, 8, 9, 10
 
