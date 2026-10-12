@@ -69,7 +69,11 @@ public class StoneGolem extends PathfinderMob {
     public StoneGolem(EntityType<? extends StoneGolem> type, Level level) {
         super(type, level);
         this.xpReward = StoneGolemBalance.EXPERIENCE;
-        this.applyStateToAi(GolemState.DORMANT);
+        // Spawned dormant: no goals may run until something wakes the golem.
+        for (Goal.Flag flag : AI_FLAGS) {
+            this.goalSelector.disableControlFlag(flag);
+            this.targetSelector.disableControlFlag(flag);
+        }
     }
 
     public static AttributeSupplier.Builder createAttributes() {

@@ -19,6 +19,9 @@
         ],
         "fabric-gametest": [
             "eu.ariakan.stonegolem.gametest.StoneGolemFabricGameTests"
+        ],
+        "fabric-client-gametest": [
+            "eu.ariakan.stonegolem.client.gametest.StoneGolemClientGameTest"
         ]
     },
     "depends": {
