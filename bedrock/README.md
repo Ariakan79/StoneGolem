@@ -20,6 +20,16 @@ python3 bedrock/build.py   # -> bedrock/dist/StoneGolem-<version>.mcaddon
 Open the `.mcaddon` on the device (Minecraft imports both packs), then enable *Stone Golem* under
 *Behavior Packs* and *Resource Packs* when creating or editing a world.
 
+## Script vs. data-driven behaviour
+
+The core cycle is data-driven (entity events, damage sensor and timers): hits wake the golem, it stands up
+(invulnerable), becomes active and fights with its delayed ground slam. The script adds the rest: ground stomp, rock
+summon, waking by mining, returning to dormancy and the Golem Core drop. So even if scripting fails on a device, the
+golem still wakes up and fights (verified by running the GameTests against a pack without its script module).
+
+Diagnostics (cheats on): `/scriptevent stonegolem:state` prints state, target, cooldowns and the pack version to chat.
+No answer means the script is not running; then enable *Settings → Creator → Content Log GUI* to see why.
+
 ## Differences to the Java edition
 
 - Same behaviour and numbers; the golem has no armor value (Bedrock mobs have no armor attribute), so it is a bit

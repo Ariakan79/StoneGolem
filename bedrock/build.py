@@ -34,7 +34,7 @@ TEXTURES = {
 
 def load_balance():
     balance = {k: v for k, v in json.loads((HERE / "balance.json").read_text()).items() if not k.startswith("_")}
-    for name in ("ROCK_RISE", "ROCK_HOLD", "ROCK_SINK"):
+    for name in ("ROCK_RISE", "ROCK_HOLD", "ROCK_SINK", "AWAKEN", "SETTLE"):
         balance[f"{name}_SECONDS"] = balance[f"{name}_TICKS"] / 20
     return balance
 

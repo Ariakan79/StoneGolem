@@ -88,6 +88,24 @@
           "range": 8.0,
           "event_name": "ambient"
         }
+      },
+      "stonegolem:awakening_timer": {
+        "minecraft:timer": {
+          "time": "{{AWAKEN_SECONDS}}",
+          "looping": false,
+          "time_down_event": {
+            "event": "stonegolem:awakened"
+          }
+        }
+      },
+      "stonegolem:settling_timer": {
+        "minecraft:timer": {
+          "time": "{{SETTLE_SECONDS}}",
+          "looping": false,
+          "time_down_event": {
+            "event": "stonegolem:settled"
+          }
+        }
       }
     },
     "components": {
@@ -160,7 +178,8 @@
                 "subject": "other",
                 "domain": "hand",
                 "value": "minecraft:is_pickaxe"
-              }
+              },
+              "event": "stonegolem:wake"
             },
             "damage_multiplier": "{{EFFECTIVE_WEAPON_MULTIPLIER}}"
           },
@@ -172,13 +191,31 @@
                 "subject": "other",
                 "domain": "hand",
                 "value": "minecraft:is_sword"
-              }
+              },
+              "event": "stonegolem:wake"
             },
             "damage_multiplier": "{{INEFFECTIVE_WEAPON_MULTIPLIER}}"
           },
           {
             "cause": "projectile",
-            "damage_multiplier": "{{PROJECTILE_MULTIPLIER}}"
+            "damage_multiplier": "{{PROJECTILE_MULTIPLIER}}",
+            "on_damage": {
+              "event": "stonegolem:wake"
+            }
+          },
+          {
+            "cause": "entity_attack",
+            "on_damage": {
+              "event": "stonegolem:wake"
+            },
+            "deals_damage": "yes"
+          },
+          {
+            "cause": "entity_explosion",
+            "on_damage": {
+              "event": "stonegolem:wake"
+            },
+            "deals_damage": "yes"
           }
         ]
       }
@@ -197,7 +234,9 @@
             "stonegolem:standing",
             "stonegolem:rooted",
             "stonegolem:targeting",
-            "stonegolem:mobile"
+            "stonegolem:mobile",
+            "stonegolem:awakening_timer",
+            "stonegolem:settling_timer"
           ]
         },
         "add": {
@@ -210,14 +249,16 @@
         "remove": {
           "component_groups": [
             "stonegolem:dormant",
-            "stonegolem:mobile"
+            "stonegolem:mobile",
+            "stonegolem:settling_timer"
           ]
         },
         "add": {
           "component_groups": [
             "stonegolem:standing",
             "stonegolem:rooted",
-            "stonegolem:targeting"
+            "stonegolem:targeting",
+            "stonegolem:awakening_timer"
           ]
         }
       },
@@ -225,7 +266,9 @@
         "remove": {
           "component_groups": [
             "stonegolem:dormant",
-            "stonegolem:rooted"
+            "stonegolem:rooted",
+            "stonegolem:awakening_timer",
+            "stonegolem:settling_timer"
           ]
         },
         "add": {
@@ -251,15 +294,115 @@
       "stonegolem:to_settling": {
         "remove": {
           "component_groups": [
+            "stonegolem:dormant",
+            "stonegolem:targeting",
             "stonegolem:mobile",
-            "stonegolem:targeting"
+            "stonegolem:awakening_timer"
           ]
         },
         "add": {
           "component_groups": [
-            "stonegolem:rooted"
+            "stonegolem:standing",
+            "stonegolem:rooted",
+            "stonegolem:settling_timer"
           ]
         }
+      },
+      "stonegolem:wake": {
+        "sequence": [
+          {
+            "filters": {
+              "any_of": [
+                {
+                  "test": "enum_property",
+                  "domain": "stonegolem:state",
+                  "value": "dormant"
+                },
+                {
+                  "test": "enum_property",
+                  "domain": "stonegolem:state",
+                  "value": "settling"
+                }
+              ]
+            },
+            "set_property": {
+              "stonegolem:state": "awakening"
+            },
+            "remove": {
+              "component_groups": [
+                "stonegolem:dormant",
+                "stonegolem:mobile",
+                "stonegolem:settling_timer"
+              ]
+            },
+            "add": {
+              "component_groups": [
+                "stonegolem:standing",
+                "stonegolem:rooted",
+                "stonegolem:targeting",
+                "stonegolem:awakening_timer"
+              ]
+            }
+          }
+        ]
+      },
+      "stonegolem:awakened": {
+        "sequence": [
+          {
+            "filters": {
+              "test": "enum_property",
+              "domain": "stonegolem:state",
+              "value": "awakening"
+            },
+            "set_property": {
+              "stonegolem:state": "active"
+            },
+            "remove": {
+              "component_groups": [
+                "stonegolem:dormant",
+                "stonegolem:rooted",
+                "stonegolem:awakening_timer",
+                "stonegolem:settling_timer"
+              ]
+            },
+            "add": {
+              "component_groups": [
+                "stonegolem:standing",
+                "stonegolem:targeting",
+                "stonegolem:mobile"
+              ]
+            }
+          }
+        ]
+      },
+      "stonegolem:settled": {
+        "sequence": [
+          {
+            "filters": {
+              "test": "enum_property",
+              "domain": "stonegolem:state",
+              "value": "settling"
+            },
+            "set_property": {
+              "stonegolem:state": "dormant"
+            },
+            "remove": {
+              "component_groups": [
+                "stonegolem:standing",
+                "stonegolem:rooted",
+                "stonegolem:targeting",
+                "stonegolem:mobile",
+                "stonegolem:awakening_timer",
+                "stonegolem:settling_timer"
+              ]
+            },
+            "add": {
+              "component_groups": [
+                "stonegolem:dormant"
+              ]
+            }
+          }
+        ]
       }
     }
   }
