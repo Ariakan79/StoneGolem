@@ -1,4 +1,4 @@
-package com.example.examplemod.platform.services;
+package eu.ariakan.stonegolem.platform.services;
 
 public interface IPlatformHelper {
 

@@ -1,7 +1,7 @@
-package com.example.examplemod.platform;
+package eu.ariakan.stonegolem.platform;
 
-import com.example.examplemod.Constants;
-import com.example.examplemod.platform.services.IPlatformHelper;
+import eu.ariakan.stonegolem.Constants;
+import eu.ariakan.stonegolem.platform.services.IPlatformHelper;
 
 import java.util.ServiceLoader;
 

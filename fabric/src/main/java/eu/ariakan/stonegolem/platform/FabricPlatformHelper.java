@@ -1,6 +1,6 @@
-package com.example.examplemod.platform;
+package eu.ariakan.stonegolem.platform;
 
-import com.example.examplemod.platform.services.IPlatformHelper;
+import eu.ariakan.stonegolem.platform.services.IPlatformHelper;
 import net.fabricmc.loader.api.FabricLoader;
 
 public class FabricPlatformHelper implements IPlatformHelper {
