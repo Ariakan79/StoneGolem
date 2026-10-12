@@ -1,32 +1,45 @@
-# MultiLoader Template
+# Stone Golem
 
-This project provides a Gradle project template that can compile Minecraft mods for multiple modloaders using a common project for the sources. This project does not require any third party libraries or dependencies. If you have any questions or want to discuss the project, please join our [Discord](https://discord.myceliummod.network).
+An ancient, sluggish guardian of stone for Minecraft **26.3** — for **Fabric** and **NeoForge**.
 
-## Getting Started
+It sleeps as a mossy boulder deep in stone caves and on rocky mountain slopes. Hit it, or mine stone or ore right next to it, and it slowly heaves itself up. It is neutral to everyone except whoever attacked it: heavy punches with strong knockback, and a telegraphed ground stomp that throws everything around it into the air. Swords and arrows barely scratch it — bring a pickaxe.
 
-### IntelliJ IDEA
-This guide will show how to import the MultiLoader Template into IntelliJ IDEA. The setup process is roughly equivalent to setting up the modloaders independently and should be very familiar to anyone who has worked with their MDKs.
+Free and donation-funded. Code and assets are MIT-licensed (see [LICENSE](LICENSE)).
 
-1. Clone or download this repository to your computer.
-2. Configure the project by setting the properties in the `gradle.properties` file. You will also need to change the `rootProject.name`  property in `settings.gradle`, this should match the folder name of your project, or else IDEA may complain.
-3. Open the template's root folder as a new project in IDEA. This is the folder that contains this README.md file and the gradlew executable.
-4. If your default JVM/JDK is not Java 25 you will encounter an error when opening the project. This error is fixed by going to `File > Settings > Build, Execution, Deployment > Build Tools > Gradle > Gradle JVM` and changing the value to a valid Java 25 JVM. You will also need to set the Project SDK to Java 25. This can be done by going to `File > Project Structure > Project SDK`. Once both have been set open the Gradle tab in IDEA and click the refresh button to reload the project.
-5. Open your Run/Debug Configurations. Under the `Application` category there should now be options to run NeoForge projects, and under the `Gradle` category there should now be options to run Fabric projects. Select one of the client options and try to run it.
-6. Assuming you were able to run the game in step 5 your workspace should now be set up.
+## Features
 
-### Eclipse
-While it is possible to use this template in Eclipse it is not recommended. During the development of this template multiple critical bugs and quirks related to Eclipse were found at nearly every level of the required build tools. While we continue to work with these tools to report and resolve issues support for projects like these are not there yet. For now Eclipse is considered unsupported by this project. The development cycle for build tools is notoriously slow so there are no ETAs available.
+- **Dormant → awakening → active → settling**: a synchronized state machine with matching animations. While dormant the golem does not move, look around or make a sound. It stands up in about 1.25 s (invulnerable meanwhile) and settles down again after 30 s without a target.
+- **Wakes up** when a player attacks it or breaks stone/ore (`#stonegolem:wakes_stone_golem`) within 4 blocks.
+- **Ground stomp**: 0.75 s wind-up, 3-block area damage, launches entities, block particles of the ground, 8 s cooldown.
+- **Weakness by tags, not hard-coded items**: weapons in `#stonegolem:effective_against_stone_golem` (pickaxes) deal ×2, weapons in `#stonegolem:ineffective_against_stone_golem` (swords) and damage types in `#stonegolem:ineffective_against_stone_golem` (projectiles) deal ×0.5.
+- Immune to knockback, fall damage and drowning.
+- **Spawning**: rare, one at a time; in covered caves below Y 40 in every biome of `#stonegolem:spawns_stone_golem` and on stone surfaces in `#stonegolem:stone_golem_surface_spawns` (mountains, stony shores, windswept hills).
+- **Drops**: 4–8 cobblestone, 0–2 moss blocks, ~10 % (+ Looting) **Golem Core**, ~10 XP.
+- English and German translations.
 
-## Development Guide
-When using this template the majority of your mod should be developed in the `common` project. The `common` project is compiled against the vanilla game and is used to hold code that is shared between the different loader-specific versions of your mod. The `common` project has no knowledge or access to ModLoader specific code, apis, or concepts. Code that requires something from a specific loader must be done through the project that is specific to that loader, such as the `fabric` or `neoforge` projects.
+## Building
 
-Loader specific projects such as the `fabric` and `neoforge` project are used to load the `common` project into the game. These projects also define code that is specific to that loader. Loader specific projects can access all the code in the `common` project. It is important to remember that the `common` project can not access code from loader specific projects.
+Requires nothing but a JDK to start Gradle; Gradle downloads JDK 25 for itself and the build (see `gradle/gradle-daemon-jvm.properties`).
 
-## Removing Platforms and Loaders
-While this template has support for many modloaders, new loaders may appear in the future, and existing loaders may become less relevant.
+```bash
+./gradlew build                        # jars in fabric/build/libs and neoforge/build/libs
+./gradlew :fabric:runClient            # or :neoforge:runClient
+./gradlew :fabric:runGametest          # headless game tests (also :neoforge:runGameTestServer)
+./gradlew :fabric:runClientGametest    # scripted client smoke test with screenshots
+```
 
-Removing loader specific projects is as easy as deleting the folder, and removing the `include('projectname')` line from the `settings.gradle` file.
-For example if you wanted to remove support for `forge` you would follow the following steps:
+See [TESTING.md](TESTING.md) for the manual checklist and [ROADMAP.md](ROADMAP.md) for what comes next.
 
-1. Delete the subproject folder. For example, delete `MultiLoader-Template/forge`.
-2. Remove the project from `settings.gradle`. For example, remove `include('forge')`. 
+## Project layout
+
+| Module     | Contents |
+|------------|----------|
+| `common`   | All gameplay: entity, AI, state machine, model, animations, renderer, tags, loot, assets, game tests. Vanilla code only. |
+| `fabric`   | Entry points, registration, biome modification, events, test wrappers. |
+| `neoforge` | Entry points, registration, biome modifier type, events, test registration. |
+
+- **Balancing**: every number lives in [`StoneGolemBalance`](common/src/main/java/eu/ariakan/stonegolem/config/StoneGolemBalance.java).
+- **Loader abstraction**: `IRegistrar` and `IPlatformHelper` services (Java `ServiceLoader`), implemented per loader.
+- **Art**: [`tools/generate_textures.py`](tools/generate_textures.py) produces the first-draft textures. The model in `StoneGolemModel` uses Blockbench-style part names (`body`, `head`, `left_arm`, `right_arm`, `left_leg`, `right_leg`); animations in `StoneGolemAnimations` follow Blockbench's Java export format, so both can be replaced by Blockbench exports.
+
+Built on [jaredlll08/MultiLoader-Template](https://github.com/jaredlll08/MultiLoader-Template). Mod ID `stonegolem`, package `eu.ariakan.stonegolem`.
