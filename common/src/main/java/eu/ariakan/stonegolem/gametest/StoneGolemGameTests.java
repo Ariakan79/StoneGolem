@@ -209,8 +209,8 @@ public final class StoneGolemGameTests {
                 })
                 .thenIdle(StoneGolemBalance.SLAM_WINDUP_TICKS - 2)
                 .thenExecute(() -> helper.assertValueEqual(target.getHealth(), health[0], "health just before impact"))
-                .thenWaitUntil(() -> helper.assertTrue(target.getHealth() <= health[0] - 6.0F,
-                        "slam must deal about 8 damage at impact, health " + health[0] + " -> " + target.getHealth()))
+                .thenWaitUntil(() -> helper.assertTrue(target.getHealth() <= health[0] - 10.0F,
+                        "slam must deal about 12 damage at impact, health " + health[0] + " -> " + target.getHealth()))
                 .thenSucceed();
     }
 

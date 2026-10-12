@@ -9,7 +9,7 @@
 ./gradlew :fabric:runClientGametest    # Client-Smoke-Test (öffnet kurz ein Fenster)
 ```
 
-Die GameTests (`common/.../gametest/StoneGolemGameTests.java`) prüfen: spawnt ruhend und bleibt stehen · erwacht bei Angriff, ist dabei unverwundbar und nimmt den Angreifer ins Ziel · erwacht beim Steinabbau in der Nähe (nicht bei Holz, nicht aus 6+ Blöcken) · Spitzhacke > Schwert · Projektile ×0,5 · Stampfer trifft und Cooldown greift · Bodenschlag trifft erst beim Aufprall (~8 Schaden) · Felsbeschwörung wirft ~8 Blöcke hoch, Felsen verschwinden · Loot enthält Cobblestone · Biome-Modifier tragen den Golem mit Gewicht/Gruppengröße ein · Spawnregeln (Stein, Höhle, offener Himmel).
+Die GameTests (`common/.../gametest/StoneGolemGameTests.java`) prüfen: spawnt ruhend und bleibt stehen · erwacht bei Angriff, ist dabei unverwundbar und nimmt den Angreifer ins Ziel · erwacht beim Steinabbau in der Nähe (nicht bei Holz, nicht aus 6+ Blöcken) · Spitzhacke > Schwert · Projektile ×0,5 · Stampfer trifft und Cooldown greift · Bodenschlag trifft erst beim Aufprall (~12 Schaden) · Felsbeschwörung wirft ~8 Blöcke hoch, Felsen verschwinden · Loot enthält Cobblestone · Biome-Modifier tragen den Golem mit Gewicht/Gruppengröße ein · Spawnregeln (Stein, Höhle, offener Himmel).
 
 Der Client-Smoke-Test prüft Client/Server-Gleichstand der Zustände, dass der echte Spieler von den Felsen 7,3–8,7 Blöcke hochgeworfen wird, und das Spawn-Ei. Screenshots liegen in `fabric/runs/clientGametest/screenshots/`.
 
@@ -28,7 +28,7 @@ Starten mit `./gradlew :fabric:runClient` bzw. `./gradlew :neoforge:runClient`, 
 - [ ] `/gamemode survival`, Golem schlagen → Aufstehanimation (~1,25 s), Untertitel „Steingolem erwacht“
 - [ ] Während des Aufstehens: weitere Treffer machen keinen Schaden (keine rote Färbung)
 - [ ] Größe: stehend ~5,4 Blöcke, doppelt so hoch wie ein Eisengolem (zum Vergleich `/summon minecraft:iron_golem` daneben); ruhend ein ~3 Blöcke hoher Felsbrocken, Hitbox (F3+B) wächst beim Aufstehen mit
-- [ ] Danach: langsam, folgt dir; Bodenschlag: beide Fäuste hoch, Aufprall vor ihm mit Staubwolke, ~4 Herzen ohne Rüstung (Normal), weicht man in der Ausholphase zurück, geht er ins Leere
+- [ ] Danach: langsam, folgt dir; Bodenschlag: beide Fäuste hoch, Aufprall vor ihm mit Staubwolke, ~6 Herzen ohne Rüstung (Normal), weicht man in der Ausholphase zurück, geht er ins Leere
 - [ ] Zweiter Spieler bzw. andere Mobs werden ignoriert (neutral, nur der Angreifer ist Ziel)
 - [ ] Neuen ruhenden Golem setzen, im Umkreis von ≤ 4 Blöcken **Stein oder Erz** abbauen → er erwacht, greift aber nicht an; Holz/Erde abbauen → nichts
 - [ ] Weglaufen (> 24 Blöcke) oder in den Kreativmodus wechseln, ca. 30 s warten → er kauert sich wieder zum Felsbrocken zusammen

@@ -11,8 +11,8 @@ public final class StoneGolemBalance {
     // --- Attributes -------------------------------------------------------------------------------------------------
     public static final double MAX_HEALTH = 80.0;
     public static final double ARMOR = 10.0;
-    /** Ground slam (the regular melee attack): 8 = 4 hearts on Normal difficulty, before armor. */
-    public static final double ATTACK_DAMAGE = 8.0;
+    /** Ground slam (the regular melee attack): 12 = 6 hearts on Normal difficulty, before armor. */
+    public static final double ATTACK_DAMAGE = 12.0;
     /** Zombie is 0.23; the golem is deliberately much slower. */
     public static final double MOVEMENT_SPEED = 0.17;
     public static final double KNOCKBACK_RESISTANCE = 1.0;

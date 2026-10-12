@@ -10,7 +10,7 @@ Free and donation-funded. Code and assets are MIT-licensed (see [LICENSE](LICENS
 
 - **Dormant → awakening → active → settling**: a synchronized state machine with matching animations. While dormant the golem does not move, look around or make a sound. It stands up in about 1.25 s (invulnerable meanwhile) and settles down again after 30 s without a target.
 - **Wakes up** when a player attacks it or breaks stone/ore (`#stonegolem:wakes_stone_golem`) within 4 blocks.
-- **Ground slam** (melee): both fists up, impact 0.4 s later in front of it — 8 damage (4 hearts on Normal), only if the target is still in reach.
+- **Ground slam** (melee): both fists up, impact 0.4 s later in front of it — 12 damage (6 hearts on Normal), only if the target is still in reach.
 - **Ground stomp**: 0.75 s wind-up, 3-block area damage, launches entities, block particles of the ground, 8 s cooldown.
 - **Rock summon** (targets 4–16 blocks away): one hand rises while the ground under the target crumbles (0.9 s warning), then one large and two smaller rocks erupt, throw everything on them ~8 blocks up and slowly sink away; 10 s cooldown. The fall hurts.
 - **Weakness by tags, not hard-coded items**: weapons in `#stonegolem:effective_against_stone_golem` (pickaxes) deal ×2, weapons in `#stonegolem:ineffective_against_stone_golem` (swords) and damage types in `#stonegolem:ineffective_against_stone_golem` (projectiles) deal ×0.5.
