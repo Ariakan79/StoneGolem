@@ -363,16 +363,26 @@ world.afterEvents.entityRemove.subscribe(event => {
   rocks.delete(event.removedEntityId);
 });
 
-/** Test and debugging hooks: /scriptevent stonegolem:wake | stonegolem:state (on the nearest golem). */
+/**
+ * Diagnostics (needs cheats): /scriptevent stonegolem:state prints the nearest golem's state to the caller's chat,
+ * /scriptevent stonegolem:wake wakes it.
+ */
 system.afterEvents.scriptEventReceive.subscribe(event => {
   const source = event.sourceEntity;
   if (!source || !event.id.startsWith("stonegolem:")) return;
   const golem = source.dimension.getEntities({ type: GOLEM, location: source.location, closest: 1 })[0];
-  if (!golem) return;
+  const reply = message => (source instanceof Player ? source.sendMessage(message) : console.warn(message));
+  if (!golem) {
+    reply("[Stone Golem] no golem loaded nearby");
+    return;
+  }
   if (event.id === "stonegolem:wake") wakeUp(golem);
   if (event.id === "stonegolem:state") {
     const d = data(golem);
+    const target = d.targetId ? world.getEntity(d.targetId) : undefined;
     const health = golem.getComponent("minecraft:health")?.currentValue;
-    console.warn(`[stonegolem] state=${getState(golem)} health=${health} target=${d.targetId ?? "-"} stomp_cd=${d.stompCooldown} summon_cd=${d.summonCooldown}`);
+    reply(`[Stone Golem] state=${getState(golem)} health=${health} target=${target?.nameTag || target?.typeId || "-"} `
+      + `distance=${distance(golem.location, source.location).toFixed(1)} stomp_cd=${d.stompCooldown} summon_cd=${d.summonCooldown} `
+      + `version=${B.VERSION}`);
   }
 });

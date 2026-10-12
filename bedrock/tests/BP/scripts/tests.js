@@ -74,6 +74,22 @@ register("wakes_when_stone_mined_nearby", test => {
     .thenSucceed();
 });
 
+// Diagnoses "attacking does nothing": a real hit by a player in each game mode must wake the golem.
+for (const [mode, name] of [[GameMode.Creative, "creative"], [GameMode.Survival, "survival"]]) {
+  register(`player_hit_wakes_golem_${name}`, test => {
+    const golem = test.spawn(GOLEM, CENTER);
+    const player = test.spawnSimulatedPlayer({ x: 12, y: 1, z: 14 }, `Hitter_${name}`, mode);
+    test.startSequence()
+      .thenExecuteAfter(5, () => {
+        player.lookAtEntity(golem);
+        test.assert(player.attackEntity(golem), "attack was not performed");
+      })
+      .thenWait(() => test.assert(state(golem) !== "dormant", `still dormant after a ${name} hit`))
+      .thenWait(() => test.assert(state(golem) === "active", `state ${state(golem)}`))
+      .thenSucceed();
+  });
+}
+
 register("pickaxe_beats_sword", test => {
   const a = test.spawn(GOLEM, { x: 5, y: 1, z: 12 });
   const b = test.spawn(GOLEM, { x: 19, y: 1, z: 12 });
