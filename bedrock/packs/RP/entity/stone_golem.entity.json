@@ -1,0 +1,42 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "stonegolem:stone_golem",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/stone_golem/stone_golem"
+      },
+      "geometry": {
+        "default": "geometry.stonegolem.stone_golem"
+      },
+      "spawn_egg": {
+        "base_color": "#7d7d78",
+        "overlay_color": "#4f7a2c"
+      },
+      "animations": {
+        "dormant": "animation.stonegolem.dormant",
+        "awaken": "animation.stonegolem.awaken",
+        "settle": "animation.stonegolem.settle",
+        "stomp": "animation.stonegolem.stomp",
+        "summon": "animation.stonegolem.summon",
+        "slam": "animation.stonegolem.slam",
+        "walk": "animation.stonegolem.walk",
+        "look_at_target": "animation.stonegolem.look_at_target",
+        "state_controller": "controller.animation.stonegolem.state",
+        "slam_controller": "controller.animation.stonegolem.slam"
+      },
+      "scripts": {
+        "animate": [
+          "state_controller",
+          "slam_controller"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ]
+    }
+  }
+}

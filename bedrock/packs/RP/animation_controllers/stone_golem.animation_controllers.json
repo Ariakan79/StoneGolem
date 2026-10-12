@@ -1,0 +1,171 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.stonegolem.state": {
+      "initial_state": "default",
+      "states": {
+        "default": {
+          "animations": [
+            "dormant"
+          ],
+          "transitions": [
+            {
+              "awakening": "query.property('stonegolem:state') == 'awakening'"
+            },
+            {
+              "active": "query.property('stonegolem:state') == 'active'"
+            },
+            {
+              "stomping": "query.property('stonegolem:state') == 'stomping'"
+            },
+            {
+              "summoning": "query.property('stonegolem:state') == 'summoning'"
+            },
+            {
+              "settling": "query.property('stonegolem:state') == 'settling'"
+            }
+          ],
+          "blend_transition": 0.15
+        },
+        "awakening": {
+          "animations": [
+            "awaken"
+          ],
+          "transitions": [
+            {
+              "default": "query.property('stonegolem:state') == 'dormant'"
+            },
+            {
+              "active": "query.property('stonegolem:state') == 'active'"
+            },
+            {
+              "stomping": "query.property('stonegolem:state') == 'stomping'"
+            },
+            {
+              "summoning": "query.property('stonegolem:state') == 'summoning'"
+            },
+            {
+              "settling": "query.property('stonegolem:state') == 'settling'"
+            }
+          ],
+          "blend_transition": 0.15
+        },
+        "active": {
+          "animations": [
+            "walk",
+            "look_at_target"
+          ],
+          "transitions": [
+            {
+              "default": "query.property('stonegolem:state') == 'dormant'"
+            },
+            {
+              "awakening": "query.property('stonegolem:state') == 'awakening'"
+            },
+            {
+              "stomping": "query.property('stonegolem:state') == 'stomping'"
+            },
+            {
+              "summoning": "query.property('stonegolem:state') == 'summoning'"
+            },
+            {
+              "settling": "query.property('stonegolem:state') == 'settling'"
+            }
+          ],
+          "blend_transition": 0.15
+        },
+        "stomping": {
+          "animations": [
+            "stomp"
+          ],
+          "transitions": [
+            {
+              "default": "query.property('stonegolem:state') == 'dormant'"
+            },
+            {
+              "awakening": "query.property('stonegolem:state') == 'awakening'"
+            },
+            {
+              "active": "query.property('stonegolem:state') == 'active'"
+            },
+            {
+              "summoning": "query.property('stonegolem:state') == 'summoning'"
+            },
+            {
+              "settling": "query.property('stonegolem:state') == 'settling'"
+            }
+          ],
+          "blend_transition": 0.15
+        },
+        "summoning": {
+          "animations": [
+            "summon"
+          ],
+          "transitions": [
+            {
+              "default": "query.property('stonegolem:state') == 'dormant'"
+            },
+            {
+              "awakening": "query.property('stonegolem:state') == 'awakening'"
+            },
+            {
+              "active": "query.property('stonegolem:state') == 'active'"
+            },
+            {
+              "stomping": "query.property('stonegolem:state') == 'stomping'"
+            },
+            {
+              "settling": "query.property('stonegolem:state') == 'settling'"
+            }
+          ],
+          "blend_transition": 0.15
+        },
+        "settling": {
+          "animations": [
+            "settle"
+          ],
+          "transitions": [
+            {
+              "default": "query.property('stonegolem:state') == 'dormant'"
+            },
+            {
+              "awakening": "query.property('stonegolem:state') == 'awakening'"
+            },
+            {
+              "active": "query.property('stonegolem:state') == 'active'"
+            },
+            {
+              "stomping": "query.property('stonegolem:state') == 'stomping'"
+            },
+            {
+              "summoning": "query.property('stonegolem:state') == 'summoning'"
+            }
+          ],
+          "blend_transition": 0.15
+        }
+      }
+    },
+    "controller.animation.stonegolem.slam": {
+      "initial_state": "default",
+      "states": {
+        "default": {
+          "transitions": [
+            {
+              "slamming": "query.is_delayed_attacking"
+            }
+          ]
+        },
+        "slamming": {
+          "animations": [
+            "slam"
+          ],
+          "transitions": [
+            {
+              "default": "query.all_animations_finished && !query.is_delayed_attacking"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

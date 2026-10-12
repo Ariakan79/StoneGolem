@@ -1,0 +1,151 @@
+{
+  "format_version": "1.20.20",
+  "sound_definitions": {
+    "stonegolem.ambient": {
+      "category": "hostile",
+      "subtitle": "subtitles.stonegolem.ambient",
+      "sounds": [
+        {
+          "name": "sounds/block/grindstone/grindstone1",
+          "pitch": 0.4,
+          "volume": 0.35
+        }
+      ]
+    },
+    "stonegolem.hurt": {
+      "category": "hostile",
+      "subtitle": "subtitles.stonegolem.hurt",
+      "sounds": [
+        {
+          "name": "sounds/dig/stone1",
+          "pitch": 0.6,
+          "volume": 1.0
+        },
+        {
+          "name": "sounds/block/deepslate/break1",
+          "pitch": 0.6,
+          "volume": 1.0
+        }
+      ]
+    },
+    "stonegolem.death": {
+      "category": "hostile",
+      "subtitle": "subtitles.stonegolem.death",
+      "sounds": [
+        {
+          "name": "sounds/random/anvil_land",
+          "pitch": 0.45,
+          "volume": 0.8
+        },
+        {
+          "name": "sounds/block/deepslate/break2",
+          "pitch": 0.4,
+          "volume": 1.0
+        }
+      ]
+    },
+    "stonegolem.step": {
+      "category": "hostile",
+      "subtitle": "subtitles.stonegolem.step",
+      "sounds": [
+        {
+          "name": "sounds/step/stone1",
+          "pitch": 0.55,
+          "volume": 0.9
+        },
+        {
+          "name": "sounds/step/stone2",
+          "pitch": 0.55,
+          "volume": 0.9
+        }
+      ]
+    },
+    "stonegolem.slam": {
+      "category": "hostile",
+      "subtitle": "subtitles.stonegolem.slam",
+      "sounds": [
+        {
+          "name": "sounds/random/anvil_land",
+          "pitch": 0.55,
+          "volume": 0.8
+        }
+      ]
+    },
+    "stonegolem.awaken": {
+      "category": "hostile",
+      "subtitle": "subtitles.stonegolem.awaken",
+      "sounds": [
+        {
+          "name": "sounds/block/grindstone/grindstone1",
+          "pitch": 0.5,
+          "volume": 0.9
+        }
+      ]
+    },
+    "stonegolem.settle": {
+      "category": "hostile",
+      "subtitle": "subtitles.stonegolem.settle",
+      "sounds": [
+        {
+          "name": "sounds/block/deepslate/place1",
+          "pitch": 0.5,
+          "volume": 1.0
+        }
+      ]
+    },
+    "stonegolem.stomp_windup": {
+      "category": "hostile",
+      "subtitle": "subtitles.stonegolem.stomp_windup",
+      "sounds": [
+        {
+          "name": "sounds/block/grindstone/grindstone1",
+          "pitch": 0.65,
+          "volume": 0.8
+        }
+      ]
+    },
+    "stonegolem.stomp": {
+      "category": "hostile",
+      "subtitle": "subtitles.stonegolem.stomp",
+      "sounds": [
+        {
+          "name": "sounds/random/anvil_land",
+          "pitch": 0.5,
+          "volume": 1.0
+        },
+        {
+          "name": "sounds/block/deepslate/break3",
+          "pitch": 0.45,
+          "volume": 1.0
+        }
+      ]
+    },
+    "stonegolem.summon": {
+      "category": "hostile",
+      "subtitle": "subtitles.stonegolem.summon",
+      "sounds": [
+        {
+          "name": "sounds/block/grindstone/grindstone1",
+          "pitch": 0.45,
+          "volume": 0.9
+        }
+      ]
+    },
+    "stonegolem.rock_erupt": {
+      "category": "hostile",
+      "subtitle": "subtitles.stonegolem.rock_erupt",
+      "sounds": [
+        {
+          "name": "sounds/block/deepslate/break1",
+          "pitch": 0.6,
+          "volume": 1.0
+        },
+        {
+          "name": "sounds/dig/stone2",
+          "pitch": 0.5,
+          "volume": 1.0
+        }
+      ]
+    }
+  }
+}

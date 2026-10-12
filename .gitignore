@@ -22,3 +22,7 @@ build
 eclipse
 run
 runs
+
+# Bedrock build output
+bedrock/build
+bedrock/dist

@@ -1,0 +1,214 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.stonegolem.stone_golem",
+        "texture_width": 128,
+        "texture_height": 128,
+        "visible_bounds_width": 4,
+        "visible_bounds_height": 7,
+        "visible_bounds_offset": [
+          0,
+          3,
+          0
+        ]
+      },
+      "bones": [
+        {
+          "name": "body",
+          "pivot": [
+            0,
+            20,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -10,
+                20,
+                -5.5
+              ],
+              "size": [
+                20,
+                28,
+                11
+              ],
+              "uv": [
+                0,
+                0
+              ]
+            },
+            {
+              "origin": [
+                -6,
+                48,
+                -2
+              ],
+              "size": [
+                12,
+                2,
+                6
+              ],
+              "uv": [
+                64,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "name": "head",
+          "pivot": [
+            0,
+            46,
+            -5
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -4.5,
+                45,
+                -12
+              ],
+              "size": [
+                9,
+                8,
+                8
+              ],
+              "uv": [
+                64,
+                0
+              ]
+            },
+            {
+              "origin": [
+                -4.5,
+                49,
+                -13
+              ],
+              "size": [
+                9,
+                2,
+                1
+              ],
+              "uv": [
+                64,
+                16
+              ]
+            }
+          ],
+          "parent": "body"
+        },
+        {
+          "name": "right_arm",
+          "pivot": [
+            12.5,
+            45,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                10.0,
+                7,
+                -3
+              ],
+              "size": [
+                6,
+                40,
+                6
+              ],
+              "uv": [
+                0,
+                40
+              ]
+            }
+          ],
+          "parent": "body"
+        },
+        {
+          "name": "left_arm",
+          "pivot": [
+            -12.5,
+            45,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -16.0,
+                7,
+                -3
+              ],
+              "size": [
+                6,
+                40,
+                6
+              ],
+              "uv": [
+                0,
+                40
+              ],
+              "mirror": true
+            }
+          ],
+          "parent": "body"
+        },
+        {
+          "name": "right_leg",
+          "pivot": [
+            5.5,
+            20,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                2.0,
+                0,
+                -3.5
+              ],
+              "size": [
+                7,
+                20,
+                7
+              ],
+              "uv": [
+                24,
+                40
+              ]
+            }
+          ]
+        },
+        {
+          "name": "left_leg",
+          "pivot": [
+            -5.5,
+            20,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -9.0,
+                0,
+                -3.5
+              ],
+              "size": [
+                7,
+                20,
+                7
+              ],
+              "uv": [
+                24,
+                40
+              ],
+              "mirror": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

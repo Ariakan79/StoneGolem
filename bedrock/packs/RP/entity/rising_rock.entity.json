@@ -1,0 +1,29 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "stonegolem:rising_rock",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/rising_rock"
+      },
+      "geometry": {
+        "default": "geometry.stonegolem.rising_rock"
+      },
+      "animations": {
+        "emerge": "animation.stonegolem.rising_rock.emerge"
+      },
+      "scripts": {
+        "scale": "1.5 * query.property('stonegolem:scale')",
+        "animate": [
+          "emerge"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ]
+    }
+  }
+}

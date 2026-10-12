@@ -1,0 +1,266 @@
+{
+  "format_version": "1.26.20",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "stonegolem:stone_golem",
+      "spawn_category": "monster",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "properties": {
+        "stonegolem:state": {
+          "type": "enum",
+          "values": [
+            "dormant",
+            "awakening",
+            "active",
+            "stomping",
+            "summoning",
+            "settling"
+          ],
+          "default": "dormant",
+          "client_sync": true
+        }
+      }
+    },
+    "component_groups": {
+      "stonegolem:dormant": {
+        "minecraft:collision_box": {
+          "width": 1.8,
+          "height": 3.0
+        },
+        "minecraft:movement": {
+          "value": 0.0
+        }
+      },
+      "stonegolem:standing": {
+        "minecraft:collision_box": {
+          "width": 1.8,
+          "height": 5.4
+        }
+      },
+      "stonegolem:rooted": {
+        "minecraft:movement": {
+          "value": 0.0
+        }
+      },
+      "stonegolem:targeting": {
+        "minecraft:behavior.hurt_by_target": {
+          "priority": 1
+        }
+      },
+      "stonegolem:mobile": {
+        "minecraft:movement": {
+          "value": "{{MOVEMENT_SPEED}}"
+        },
+        "minecraft:navigation.walk": {
+          "avoid_water": true,
+          "can_path_over_water": false
+        },
+        "minecraft:movement.basic": {},
+        "minecraft:jump.static": {},
+        "minecraft:attack": {
+          "damage": "{{ATTACK_DAMAGE}}"
+        },
+        "minecraft:behavior.delayed_attack": {
+          "priority": 2,
+          "attack_once": false,
+          "track_target": true,
+          "require_complete_path": false,
+          "random_stop_interval": 0,
+          "reach_multiplier": 1.2,
+          "speed_multiplier": 1.0,
+          "attack_duration": "{{SLAM_DURATION_SECONDS}}",
+          "hit_delay_pct": "{{SLAM_HIT_DELAY_PCT}}"
+        },
+        "minecraft:behavior.random_stroll": {
+          "priority": 6,
+          "speed_multiplier": 0.6
+        },
+        "minecraft:behavior.look_at_player": {
+          "priority": 7,
+          "look_distance": 8.0
+        },
+        "minecraft:behavior.random_look_around": {
+          "priority": 8
+        },
+        "minecraft:ambient_sound_interval": {
+          "value": 8.0,
+          "range": 8.0,
+          "event_name": "ambient"
+        }
+      }
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "stone_golem",
+          "golem",
+          "mob"
+        ]
+      },
+      "minecraft:health": {
+        "value": "{{MAX_HEALTH}}",
+        "max": "{{MAX_HEALTH}}"
+      },
+      "minecraft:knockback_resistance": {
+        "value": 1.0
+      },
+      "minecraft:follow_range": {
+        "value": "{{FOLLOW_RANGE}}",
+        "max": "{{FOLLOW_RANGE}}"
+      },
+      "minecraft:breathable": {
+        "total_supply": 15,
+        "suffocate_time": 0,
+        "breathes_air": true,
+        "breathes_water": true
+      },
+      "minecraft:physics": {},
+      "minecraft:pushable_by_block": {},
+      "minecraft:nameable": {},
+      "minecraft:loot": {
+        "table": "loot_tables/entities/stone_golem.json"
+      },
+      "minecraft:experience_reward": {
+        "on_death": "query.last_hit_by_player ? {{EXPERIENCE}} : 0"
+      },
+      "minecraft:despawn": {
+        "despawn_from_distance": {}
+      },
+      "minecraft:conditional_bandwidth_optimization": {},
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "on_damage": {
+              "filters": {
+                "test": "enum_property",
+                "domain": "stonegolem:state",
+                "value": "awakening"
+              }
+            },
+            "deals_damage": "no"
+          },
+          {
+            "cause": "fall",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "drowning",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "suffocation",
+            "deals_damage": "no"
+          },
+          {
+            "cause": "entity_attack",
+            "on_damage": {
+              "filters": {
+                "test": "has_equipment_tag",
+                "subject": "other",
+                "domain": "hand",
+                "value": "minecraft:is_pickaxe"
+              }
+            },
+            "damage_multiplier": "{{EFFECTIVE_WEAPON_MULTIPLIER}}"
+          },
+          {
+            "cause": "entity_attack",
+            "on_damage": {
+              "filters": {
+                "test": "has_equipment_tag",
+                "subject": "other",
+                "domain": "hand",
+                "value": "minecraft:is_sword"
+              }
+            },
+            "damage_multiplier": "{{INEFFECTIVE_WEAPON_MULTIPLIER}}"
+          },
+          {
+            "cause": "projectile",
+            "damage_multiplier": "{{PROJECTILE_MULTIPLIER}}"
+          }
+        ]
+      }
+    },
+    "events": {
+      "minecraft:entity_spawned": {
+        "add": {
+          "component_groups": [
+            "stonegolem:dormant"
+          ]
+        }
+      },
+      "stonegolem:to_dormant": {
+        "remove": {
+          "component_groups": [
+            "stonegolem:standing",
+            "stonegolem:rooted",
+            "stonegolem:targeting",
+            "stonegolem:mobile"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "stonegolem:dormant"
+          ]
+        }
+      },
+      "stonegolem:to_awakening": {
+        "remove": {
+          "component_groups": [
+            "stonegolem:dormant",
+            "stonegolem:mobile"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "stonegolem:standing",
+            "stonegolem:rooted",
+            "stonegolem:targeting"
+          ]
+        }
+      },
+      "stonegolem:to_active": {
+        "remove": {
+          "component_groups": [
+            "stonegolem:dormant",
+            "stonegolem:rooted"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "stonegolem:standing",
+            "stonegolem:targeting",
+            "stonegolem:mobile"
+          ]
+        }
+      },
+      "stonegolem:to_rooted": {
+        "remove": {
+          "component_groups": [
+            "stonegolem:mobile"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "stonegolem:rooted"
+          ]
+        }
+      },
+      "stonegolem:to_settling": {
+        "remove": {
+          "component_groups": [
+            "stonegolem:mobile",
+            "stonegolem:targeting"
+          ]
+        },
+        "add": {
+          "component_groups": [
+            "stonegolem:rooted"
+          ]
+        }
+      }
+    }
+  }
+}

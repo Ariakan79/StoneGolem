@@ -1,0 +1,17 @@
+{
+  "entity_sounds": {
+    "entities": {
+      "stonegolem:stone_golem": {
+        "volume": 1.0,
+        "pitch": 1.0,
+        "events": {
+          "ambient": "stonegolem.ambient",
+          "hurt": "stonegolem.hurt",
+          "death": "stonegolem.death",
+          "step": "stonegolem.step",
+          "attack.strong": "stonegolem.slam"
+        }
+      }
+    }
+  }
+}

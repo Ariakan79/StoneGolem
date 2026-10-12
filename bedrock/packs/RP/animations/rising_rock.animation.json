@@ -1,0 +1,17 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.stonegolem.rising_rock.emerge": {
+      "loop": true,
+      "bones": {
+        "root": {
+          "position": [
+            0,
+            "-(1.0 - (query.life_time < {{ROCK_RISE_SECONDS}} ? query.life_time / {{ROCK_RISE_SECONDS}} : (query.life_time < {{ROCK_RISE_SECONDS}} + {{ROCK_HOLD_SECONDS}} ? 1.0 : 1.0 - math.pow(math.clamp((query.life_time - {{ROCK_RISE_SECONDS}} - {{ROCK_HOLD_SECONDS}}) / {{ROCK_SINK_SECONDS}}, 0.0, 1.0), 2.0)))) * 38.0",
+            0
+          ]
+        }
+      }
+    }
+  }
+}
