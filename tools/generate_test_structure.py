@@ -33,7 +33,8 @@ def payload(tag, value):
 
 
 def main():
-    palette = [{"Name": (TAG_STRING, "minecraft:stone")}, {"Name": (TAG_STRING, "minecraft:air")}]
+    # 26.3 palette entries use "id" (formerly "Name"); unknown keys silently become air.
+    palette = [{"id": (TAG_STRING, "minecraft:stone")}, {"id": (TAG_STRING, "minecraft:air")}]
     blocks = []
     for x in range(SIZE[0]):
         for y in range(SIZE[1]):

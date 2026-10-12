@@ -45,4 +45,14 @@ public class StoneGolemFabricGameTests {
     public void lootTableDropsCobblestone(GameTestHelper helper) {
         StoneGolemGameTests.lootTableDropsCobblestone(helper);
     }
+
+    @GameTest(structure = ARENA, maxTicks = StoneGolemGameTests.MAX_TICKS)
+    public void biomeSpawnListsContainGolem(GameTestHelper helper) {
+        StoneGolemGameTests.biomeSpawnListsContainGolem(helper);
+    }
+
+    @GameTest(structure = ARENA, maxTicks = StoneGolemGameTests.MAX_TICKS)
+    public void spawnRulesRequireStoneAndCave(GameTestHelper helper) {
+        StoneGolemGameTests.spawnRulesRequireStoneAndCave(helper);
+    }
 }

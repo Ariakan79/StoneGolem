@@ -37,6 +37,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
@@ -91,14 +92,16 @@ public class StoneGolem extends PathfinderMob {
     }
 
     /**
-     * Natural spawn rule: needs stone underfoot, and either a dark cave below {@link StoneGolemBalance#UNDERGROUND_MAX_Y}
+     * Natural spawn rule: needs stone underfoot, and either a covered cave below {@link StoneGolemBalance#UNDERGROUND_MAX_Y}
      * or a biome from {@code #stonegolem:stone_golem_surface_spawns}.
      */
     public static boolean checkStoneGolemSpawnRules(EntityType<StoneGolem> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
         if (!level.getBlockState(pos.below()).is(ModTags.Blocks.STONE_GOLEM_SPAWNABLE_ON)) {
             return false;
         }
-        if (pos.getY() < StoneGolemBalance.UNDERGROUND_MAX_Y && !level.canSeeSky(pos)) {
+        // "Underground" means solid blocks above (heightmap), which unlike sky light is always up to date.
+        boolean covered = pos.getY() < level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ());
+        if (pos.getY() < StoneGolemBalance.UNDERGROUND_MAX_Y && covered) {
             return true;
         }
         return level.getBiome(pos).is(ModTags.Biomes.STONE_GOLEM_SURFACE_SPAWNS);

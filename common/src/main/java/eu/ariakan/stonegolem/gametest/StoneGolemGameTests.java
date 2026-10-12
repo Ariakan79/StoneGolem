@@ -6,6 +6,7 @@ import eu.ariakan.stonegolem.entity.GolemState;
 import eu.ariakan.stonegolem.entity.StoneGolem;
 import eu.ariakan.stonegolem.event.StoneGolemEvents;
 import eu.ariakan.stonegolem.registry.ModEntities;
+import eu.ariakan.stonegolem.registry.ModTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -13,7 +14,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -51,6 +55,8 @@ public final class StoneGolemGameTests {
         TESTS.put("projectiles_are_weak", StoneGolemGameTests::projectilesAreWeak);
         TESTS.put("stomp_hits_and_starts_cooldown", StoneGolemGameTests::stompHitsAndStartsCooldown);
         TESTS.put("loot_table_drops_cobblestone", StoneGolemGameTests::lootTableDropsCobblestone);
+        TESTS.put("biome_spawn_lists_contain_golem", StoneGolemGameTests::biomeSpawnListsContainGolem);
+        TESTS.put("spawn_rules_require_stone_and_cave", StoneGolemGameTests::spawnRulesRequireStoneAndCave);
     }
 
     private StoneGolemGameTests() {
@@ -175,5 +181,54 @@ public final class StoneGolemGameTests {
         StoneGolem golem = spawnGolem(helper, CENTER);
         golem.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), Float.MAX_VALUE);
         helper.succeedWhen(() -> helper.assertItemEntityPresent(Items.COBBLESTONE, CENTER, 3.0));
+    }
+
+    /**
+     * Verifies the loader-specific biome modifiers through the same lookup natural spawning uses: the overworld test
+     * biome must offer the golem as a monster with the configured weight and group size.
+     */
+    public static void biomeSpawnListsContainGolem(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(CENTER);
+        boolean listed = level.getChunkSource().getGenerator()
+                .getMobsAt(level, level.structureManager(), MobCategory.MONSTER, pos)
+                .unwrap().stream()
+                .anyMatch(entry -> entry.value().type() == ModEntities.STONE_GOLEM.get()
+                        && entry.weight() == StoneGolemBalance.spawnWeight()
+                        && entry.value().count().maxInclusive() == StoneGolemBalance.SPAWN_MAX_GROUP);
+        helper.assertTrue(listed, "monster spawn list at " + pos + " must contain the stone golem");
+        helper.succeed();
+    }
+
+    public static void spawnRulesRequireStoneAndCave(GameTestHelper helper) {
+        var level = helper.getLevel();
+        // Work in absolute coordinates: find the first air block above the arena's stone floor.
+        BlockPos pos = helper.absolutePos(CENTER);
+        while (level.getBlockState(pos.below()).isAir()) {
+            pos = pos.below();
+        }
+        EntityType<StoneGolem> type = ModEntities.STONE_GOLEM.get();
+        helper.assertTrue(pos.getY() < StoneGolemBalance.UNDERGROUND_MAX_Y, "test arena must be below the cave limit");
+
+        // Open sky: remove the framework's barrier ceiling above the column, then only surface biomes allow spawns.
+        for (int dy = 1; dy <= 8; dy++) {
+            if (level.getBlockState(pos.above(dy)).is(Blocks.BARRIER)) {
+                level.setBlockAndUpdate(pos.above(dy), Blocks.AIR.defaultBlockState());
+            }
+        }
+        boolean surfaceBiome = level.getBiome(pos).is(ModTags.Biomes.STONE_GOLEM_SURFACE_SPAWNS);
+        helper.assertValueEqual(StoneGolem.checkStoneGolemSpawnRules(type, level, EntitySpawnReason.NATURAL, pos, level.getRandom()),
+                surfaceBiome, "spawn allowed under open sky");
+
+        // Roofed over (a cave): allowed on stone.
+        level.setBlockAndUpdate(pos.above(3), Blocks.STONE.defaultBlockState());
+        helper.assertTrue(StoneGolem.checkStoneGolemSpawnRules(type, level, EntitySpawnReason.NATURAL, pos, level.getRandom()),
+                "spawn must be allowed in a covered stone cave");
+
+        // Not on dirt.
+        level.setBlockAndUpdate(pos.below(), Blocks.DIRT.defaultBlockState());
+        helper.assertFalse(StoneGolem.checkStoneGolemSpawnRules(type, level, EntitySpawnReason.NATURAL, pos, level.getRandom()),
+                "spawn must require stone below");
+        helper.succeed();
     }
 }
