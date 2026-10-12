@@ -1,6 +1,7 @@
 package eu.ariakan.stonegolem.entity;
 
 import eu.ariakan.stonegolem.config.StoneGolemBalance;
+import eu.ariakan.stonegolem.registry.ModEntities;
 import eu.ariakan.stonegolem.registry.ModSounds;
 import eu.ariakan.stonegolem.registry.ModTags;
 import net.minecraft.core.BlockPos;
@@ -61,11 +62,16 @@ public class StoneGolem extends PathfinderMob {
     public final AnimationState settleAnimationState = new AnimationState();
     public final AnimationState stompAnimationState = new AnimationState();
     public final AnimationState attackAnimationState = new AnimationState();
+    public final AnimationState summonAnimationState = new AnimationState();
 
     // Server-side bookkeeping.
     private int stateTicks;
     private int ticksWithoutTarget;
     private int stompCooldown;
+    private int summonCooldown;
+    private @Nullable BlockPos summonPos;
+    private int slamTicks;
+    private @Nullable LivingEntity slamTarget;
 
     public StoneGolem(EntityType<? extends StoneGolem> type, Level level) {
         super(type, level);
@@ -136,6 +142,7 @@ public class StoneGolem extends PathfinderMob {
             case AWAKENING -> this.playSound(ModSounds.STONE_GOLEM_AWAKEN.get(), 1.5F, 1.0F);
             case SETTLING -> this.playSound(ModSounds.STONE_GOLEM_SETTLE.get(), 1.0F, 1.0F);
             case STOMPING -> this.playSound(ModSounds.STONE_GOLEM_STOMP_WINDUP.get(), 1.5F, 1.0F);
+            case SUMMONING -> this.playSound(ModSounds.STONE_GOLEM_SUMMON.get(), 1.5F, 1.0F);
             default -> {
             }
         }
@@ -163,8 +170,8 @@ public class StoneGolem extends PathfinderMob {
         for (Goal.Flag flag : AI_FLAGS) {
             this.goalSelector.disableControlFlag(flag);
         }
-        // Keep the current target while stomping, drop targeting otherwise.
-        if (state != GolemState.STOMPING) {
+        // Keep the current target during special attacks, drop targeting otherwise.
+        if (!state.isAwake()) {
             this.targetSelector.disableControlFlag(Goal.Flag.TARGET);
         }
     }
@@ -200,6 +207,10 @@ public class StoneGolem extends PathfinderMob {
         if (this.stompCooldown > 0) {
             this.stompCooldown--;
         }
+        if (this.summonCooldown > 0) {
+            this.summonCooldown--;
+        }
+        this.tickSlam(level);
 
         switch (this.getState()) {
             case DORMANT -> this.getNavigation().stop();
@@ -211,6 +222,7 @@ public class StoneGolem extends PathfinderMob {
             }
             case ACTIVE -> this.tickActive();
             case STOMPING -> this.tickStomp(level);
+            case SUMMONING -> this.tickSummon(level);
             case SETTLING -> {
                 if (this.stateTicks >= StoneGolemBalance.SETTLE_TICKS) {
                     this.setState(GolemState.DORMANT);
@@ -229,9 +241,90 @@ public class StoneGolem extends PathfinderMob {
         }
         this.ticksWithoutTarget = 0;
         double triggerRange = StoneGolemBalance.STOMP_TRIGGER_RANGE + target.getBbWidth() / 2.0;
-        if (this.stompCooldown <= 0 && this.onGround() && this.distanceToSqr(target) <= triggerRange * triggerRange) {
-            this.setState(GolemState.STOMPING);
+        double distanceSqr = this.distanceToSqr(target);
+        if (this.slamTicks > 0 || !this.onGround()) {
+            return;
         }
+        if (this.stompCooldown <= 0 && distanceSqr <= triggerRange * triggerRange) {
+            this.setState(GolemState.STOMPING);
+        } else if (this.summonCooldown <= 0
+                && distanceSqr >= StoneGolemBalance.SUMMON_MIN_RANGE * StoneGolemBalance.SUMMON_MIN_RANGE
+                && distanceSqr <= StoneGolemBalance.SUMMON_MAX_RANGE * StoneGolemBalance.SUMMON_MAX_RANGE
+                && this.getSensing().hasLineOfSight(target)) {
+            BlockPos ground = findGroundBelow(this.level(), target.blockPosition());
+            if (ground != null) {
+                // The spot is fixed when the cast starts, so a target that notices the warning can step away.
+                this.summonPos = ground;
+                this.setState(GolemState.SUMMONING);
+            }
+        }
+    }
+
+    /** First air block above solid ground at or up to 4 blocks below {@code start}, or null. */
+    private static @Nullable BlockPos findGroundBelow(Level level, BlockPos start) {
+        BlockPos pos = start;
+        for (int i = 0; i < 5; i++) {
+            if (!level.getBlockState(pos.below()).getCollisionShape(level, pos.below()).isEmpty()) {
+                return pos;
+            }
+            pos = pos.below();
+        }
+        return null;
+    }
+
+    // --- Rock summon --------------------------------------------------------------------------------------------
+
+    private void tickSummon(ServerLevel level) {
+        this.getNavigation().stop();
+        LivingEntity target = this.getTarget();
+        if (target != null && this.stateTicks < StoneGolemBalance.SUMMON_WINDUP_TICKS) {
+            this.getLookControl().setLookAt(target, 30.0F, 30.0F);
+        }
+        if (this.summonPos != null && this.stateTicks < StoneGolemBalance.SUMMON_WINDUP_TICKS && this.stateTicks % 3 == 0) {
+            // Telegraph: the ground under the target crumbles.
+            BlockState ground = level.getBlockState(this.summonPos.below());
+            level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ground),
+                    this.summonPos.getX() + 0.5, this.summonPos.getY() + 0.1, this.summonPos.getZ() + 0.5, 8, 0.6, 0.05, 0.6, 0.05);
+        }
+        if (this.stateTicks == StoneGolemBalance.SUMMON_WINDUP_TICKS) {
+            this.summonRocks(level);
+        } else if (this.stateTicks >= StoneGolemBalance.SUMMON_WINDUP_TICKS + StoneGolemBalance.SUMMON_RECOVERY_TICKS) {
+            this.setState(GolemState.ACTIVE);
+        }
+    }
+
+    private void summonRocks(ServerLevel level) {
+        this.summonCooldown = StoneGolemBalance.SUMMON_COOLDOWN_TICKS;
+        BlockPos center = this.summonPos;
+        this.summonPos = null;
+        if (center == null) {
+            return;
+        }
+        spawnRock(level, center.getX() + 0.5, center.getY(), center.getZ() + 0.5, 1.0F);
+        for (int i = 0; i < StoneGolemBalance.SUMMON_EXTRA_ROCKS; i++) {
+            double angle = this.random.nextDouble() * Math.PI * 2.0;
+            double distance = 1.6 + this.random.nextDouble() * 0.6;
+            BlockPos ground = findGroundBelow(level, BlockPos.containing(
+                    center.getX() + 0.5 + Math.cos(angle) * distance, center.getY() + 1, center.getZ() + 0.5 + Math.sin(angle) * distance));
+            if (ground != null) {
+                spawnRock(level, center.getX() + 0.5 + Math.cos(angle) * distance, ground.getY(),
+                        center.getZ() + 0.5 + Math.sin(angle) * distance, 0.55F + this.random.nextFloat() * 0.15F);
+            }
+        }
+        this.gameEvent(GameEvent.ENTITY_ACTION);
+    }
+
+    private void spawnRock(ServerLevel level, double x, double y, double z, float scale) {
+        RisingRock rock = ModEntities.RISING_ROCK.get().create(level, EntitySpawnReason.MOB_SUMMONED);
+        if (rock != null) {
+            rock.setScale(scale);
+            rock.snapTo(x, y, z, this.random.nextFloat() * 360.0F, 0.0F);
+            level.addFreshEntity(rock);
+        }
+    }
+
+    public int getSummonCooldown() {
+        return this.summonCooldown;
     }
 
     private void tickStomp(ServerLevel level) {
@@ -292,20 +385,42 @@ public class StoneGolem extends PathfinderMob {
 
     // --- Combat -------------------------------------------------------------------------------------------------
 
+    /**
+     * Called by the melee goal when the target is in reach. Instead of hitting at once, the golem raises both fists
+     * and the hit only lands at the impact of the ground slam (see {@link #tickSlam}).
+     */
     @Override
     public boolean doHurtTarget(ServerLevel level, Entity target) {
-        level.broadcastEntityEvent(this, EntityEvent.START_ATTACKING);
-        boolean hurt = super.doHurtTarget(level, target);
-        if (hurt && target instanceof LivingEntity living) {
-            double scale = Math.max(0.0, 1.0 - living.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
-            living.push(0.0, StoneGolemBalance.MELEE_LIFT * scale, 0.0);
+        if (this.slamTicks > 0 || !(target instanceof LivingEntity living)) {
+            return false;
         }
-        return hurt;
+        this.slamTicks = StoneGolemBalance.SLAM_WINDUP_TICKS;
+        this.slamTarget = living;
+        level.broadcastEntityEvent(this, EntityEvent.START_ATTACKING);
+        return true;
     }
 
+    private void tickSlam(ServerLevel level) {
+        if (this.slamTicks <= 0 || --this.slamTicks > 0) {
+            return;
+        }
+        LivingEntity target = this.slamTarget;
+        this.slamTarget = null;
+        Vec3 look = Vec3.directionFromRotation(0.0F, this.getYRot());
+        BlockPos impact = BlockPos.containing(this.getX() + look.x * 1.6, this.getY() - 0.5, this.getZ() + look.z * 1.6);
+        BlockState ground = level.getBlockState(impact);
+        level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ground.isAir() ? Blocks.STONE.defaultBlockState() : ground),
+                impact.getX() + 0.5, impact.getY() + 1.1, impact.getZ() + 0.5, 30, 0.5, 0.05, 0.5, 0.15);
+        this.playSound(ModSounds.STONE_GOLEM_SLAM.get(), 1.5F, 1.0F);
+        if (target != null && target.isAlive() && this.isWithinMeleeAttackRange(target) && super.doHurtTarget(level, target)) {
+            double scale = Math.max(0.0, 1.0 - target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
+            target.push(0.0, StoneGolemBalance.MELEE_LIFT * scale, 0.0);
+        }
+    }
+
+    /** The slam sound plays at impact (tickSlam), hit or miss; no extra sound on a hit. */
     @Override
     protected void playAttackSound() {
-        this.playSound(ModSounds.STONE_GOLEM_ATTACK.get(), 1.0F, 1.0F);
     }
 
     @Override
@@ -366,6 +481,7 @@ public class StoneGolem extends PathfinderMob {
         this.updateAnimation(this.awakenAnimationState, state == GolemState.AWAKENING);
         this.updateAnimation(this.settleAnimationState, state == GolemState.SETTLING);
         this.updateAnimation(this.stompAnimationState, state == GolemState.STOMPING);
+        this.updateAnimation(this.summonAnimationState, state == GolemState.SUMMONING);
     }
 
     private void updateAnimation(AnimationState animation, boolean running) {
@@ -414,6 +530,7 @@ public class StoneGolem extends PathfinderMob {
         super.addAdditionalSaveData(output);
         output.putBoolean("dormant", !this.getState().isAwake() && this.getState() != GolemState.AWAKENING);
         output.putInt("stomp_cooldown", this.stompCooldown);
+        output.putInt("summon_cooldown", this.summonCooldown);
     }
 
     @Override
@@ -422,5 +539,6 @@ public class StoneGolem extends PathfinderMob {
         // Transitional states (waking, stomping, settling) collapse to their stable end state on load.
         this.applyState(input.getBooleanOr("dormant", true) ? GolemState.DORMANT : GolemState.ACTIVE);
         this.stompCooldown = input.getIntOr("stomp_cooldown", 0);
+        this.summonCooldown = input.getIntOr("summon_cooldown", 0);
     }
 }

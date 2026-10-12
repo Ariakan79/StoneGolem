@@ -13,6 +13,8 @@ public enum GolemState {
     ACTIVE,
     /** Telegraphed ground stomp: wind-up, impact and a short recovery. */
     STOMPING,
+    /** One-handed rock summon: raise a hand, rocks erupt under the target, short recovery. */
+    SUMMONING,
     /** Crouching back down into the dormant pose. */
     SETTLING;
 
@@ -24,6 +26,6 @@ public enum GolemState {
 
     /** Whether the golem's regular AI (moving, looking around, targeting) may run in this state. */
     public boolean isAwake() {
-        return this == ACTIVE || this == STOMPING;
+        return this == ACTIVE || this == STOMPING || this == SUMMONING;
     }
 }

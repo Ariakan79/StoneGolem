@@ -17,9 +17,11 @@ public class StoneGolemNeoForgeClient {
 
     private static void onRegisterLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(StoneGolemRenderer.LAYER, StoneGolemModel::createBodyLayer);
+        event.registerLayerDefinition(RisingRockRenderer.LAYER, RisingRockModel::createBodyLayer);
     }
 
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.STONE_GOLEM.get(), StoneGolemRenderer::new);
+        event.registerEntityRenderer(ModEntities.RISING_ROCK.get(), RisingRockRenderer::new);
     }
 }

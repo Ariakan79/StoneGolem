@@ -4,14 +4,14 @@
 
 ```bash
 ./gradlew build                        # muss grün sein, ohne Compiler-Warnungen
-./gradlew :fabric:runGametest          # Server-GameTests Fabric   → "All 10 required tests passed"
-./gradlew :neoforge:runGameTestServer  # Server-GameTests NeoForge → "All 10 required tests passed"
+./gradlew :fabric:runGametest          # Server-GameTests Fabric   → "All 12 required tests passed"
+./gradlew :neoforge:runGameTestServer  # Server-GameTests NeoForge → "All 12 required tests passed"
 ./gradlew :fabric:runClientGametest    # Client-Smoke-Test (öffnet kurz ein Fenster)
 ```
 
-Die GameTests (`common/.../gametest/StoneGolemGameTests.java`) prüfen: spawnt ruhend und bleibt stehen · erwacht bei Angriff, ist dabei unverwundbar und nimmt den Angreifer ins Ziel · erwacht beim Steinabbau in der Nähe (nicht bei Holz, nicht aus 6+ Blöcken) · Spitzhacke > Schwert · Projektile ×0,5 · Stampfer trifft und Cooldown greift · Loot enthält Cobblestone · Biome-Modifier tragen den Golem mit Gewicht/Gruppengröße ein · Spawnregeln (Stein, Höhle, offener Himmel).
+Die GameTests (`common/.../gametest/StoneGolemGameTests.java`) prüfen: spawnt ruhend und bleibt stehen · erwacht bei Angriff, ist dabei unverwundbar und nimmt den Angreifer ins Ziel · erwacht beim Steinabbau in der Nähe (nicht bei Holz, nicht aus 6+ Blöcken) · Spitzhacke > Schwert · Projektile ×0,5 · Stampfer trifft und Cooldown greift · Bodenschlag trifft erst beim Aufprall (~8 Schaden) · Felsbeschwörung wirft ~8 Blöcke hoch, Felsen verschwinden · Loot enthält Cobblestone · Biome-Modifier tragen den Golem mit Gewicht/Gruppengröße ein · Spawnregeln (Stein, Höhle, offener Himmel).
 
-Der Client-Smoke-Test prüft Client/Server-Gleichstand der Zustände (DORMANT, AWAKENING, ACTIVE) und das Spawn-Ei. Screenshots liegen in `fabric/runs/clientGametest/screenshots/`.
+Der Client-Smoke-Test prüft Client/Server-Gleichstand der Zustände, dass der echte Spieler von den Felsen 7,3–8,7 Blöcke hochgeworfen wird, und das Spawn-Ei. Screenshots liegen in `fabric/runs/clientGametest/screenshots/`.
 
 ## 2. Manuell im Spiel (beide Loader)
 
@@ -27,7 +27,8 @@ Starten mit `./gradlew :fabric:runClient` bzw. `./gradlew :neoforge:runClient`, 
 - [ ] Ruhend: bewegt sich nicht, dreht den Kopf nicht, macht keine Geräusche (Untertitel bleiben leer)
 - [ ] `/gamemode survival`, Golem schlagen → Aufstehanimation (~1,25 s), Untertitel „Steingolem erwacht“
 - [ ] Während des Aufstehens: weitere Treffer machen keinen Schaden (keine rote Färbung)
-- [ ] Danach: langsam, folgt dir, Faustschlag mit starkem Rückstoß nach oben/hinten
+- [ ] Größe: etwa wie ein Eisengolem (zum Vergleich `/summon minecraft:iron_golem` daneben)
+- [ ] Danach: langsam, folgt dir; Bodenschlag: beide Fäuste hoch, Aufprall vor ihm mit Staubwolke, ~4 Herzen ohne Rüstung (Normal), weicht man in der Ausholphase zurück, geht er ins Leere
 - [ ] Zweiter Spieler bzw. andere Mobs werden ignoriert (neutral, nur der Angreifer ist Ziel)
 - [ ] Neuen ruhenden Golem setzen, im Umkreis von ≤ 4 Blöcken **Stein oder Erz** abbauen → er erwacht, greift aber nicht an; Holz/Erde abbauen → nichts
 - [ ] Weglaufen (> 24 Blöcke) oder in den Kreativmodus wechseln, ca. 30 s warten → er kauert sich wieder zum Felsbrocken zusammen
@@ -37,6 +38,13 @@ Starten mit `./gradlew :fabric:runClient` bzw. `./gradlew :neoforge:runClient`, 
 - [ ] Im Überlebensmodus nah am aktiven Golem bleiben → er lehnt sich zurück, Arme hoch (sichtbares Ausholen, ~0,75 s), dann Schlag auf den Boden
 - [ ] Beim Aufschlag: Blockbruch-Partikel des Untergrunds, dumpfer Amboss-Sound, du wirst leicht hochgeschleudert
 - [ ] Nächster Stampfer frühestens nach ~8 s (dazwischen nur Faustschläge)
+
+### Felsbeschwörung
+- [ ] 6–15 Blöcke Abstand zum aktiven Golem halten → er hebt eine Hand, unter dir bröckelt der Boden (Partikel)
+- [ ] Stehen bleiben → nach ~1 s brechen ein großer und zwei kleine Felsen hervor, du fliegst ~8 Blöcke hoch (auch in Rüstung)
+- [ ] Die Felsen versinken langsam, du fällst herunter und nimmst normalen Fallschaden (Federfall/Wasser helfen)
+- [ ] Bei der Vorwarnung zur Seite gehen → die Felsen verfehlen dich
+- [ ] Nächste Beschwörung frühestens nach ~10 s; näher als 4 Blöcke gibt es stattdessen Bodenschlag/Stampfer
 
 ### Waffen-Schwäche (Tags)
 - [ ] Eisenspitzhacke vs. Eisenschwert auf zwei frische Golems (je ein Schlag nach dem Erwachen): Spitzhacke nimmt deutlich mehr Leben

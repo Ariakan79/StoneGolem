@@ -7,9 +7,12 @@
   "subtitles.stonegolem.entity.stone_golem.hurt": "Stone Golem cracks",
   "subtitles.stonegolem.entity.stone_golem.death": "Stone Golem crumbles",
   "subtitles.stonegolem.entity.stone_golem.step": "Stone Golem stomps",
-  "subtitles.stonegolem.entity.stone_golem.attack": "Stone Golem strikes",
   "subtitles.stonegolem.entity.stone_golem.awaken": "Stone Golem awakens",
   "subtitles.stonegolem.entity.stone_golem.settle": "Stone Golem settles",
   "subtitles.stonegolem.entity.stone_golem.stomp_windup": "Stone Golem winds up",
-  "subtitles.stonegolem.entity.stone_golem.stomp": "Ground shakes"
+  "subtitles.stonegolem.entity.stone_golem.stomp": "Ground shakes",
+  "entity.stonegolem.rising_rock": "Rising Rock",
+  "subtitles.stonegolem.entity.stone_golem.slam": "Stone Golem slams the ground",
+  "subtitles.stonegolem.entity.stone_golem.summon": "Stone Golem calls the earth",
+  "subtitles.stonegolem.entity.rising_rock.erupt": "Rock erupts"
 }

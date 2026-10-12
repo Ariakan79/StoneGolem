@@ -2,7 +2,7 @@
 
 An ancient, sluggish guardian of stone for Minecraft **26.3** — for **Fabric** and **NeoForge**.
 
-It sleeps as a mossy boulder deep in stone caves and on rocky mountain slopes. Hit it, or mine stone or ore right next to it, and it slowly heaves itself up. It is neutral to everyone except whoever attacked it: heavy punches with strong knockback, and a telegraphed ground stomp that throws everything around it into the air. Swords and arrows barely scratch it — bring a pickaxe.
+It sleeps as a mossy boulder deep in stone caves and on rocky mountain slopes. Hit it, or mine stone or ore right next to it, and it slowly heaves itself up. It stands as tall as an iron golem and is neutral to everyone except whoever attacked it: two-fisted ground slams, a telegraphed stomp that throws everything around it into the air, and from a distance it calls up great rocks under its target that hurl it 8 blocks high before sinking back into the earth. Swords and arrows barely scratch it — bring a pickaxe.
 
 Free and donation-funded. Code and assets are MIT-licensed (see [LICENSE](LICENSE)).
 
@@ -10,7 +10,9 @@ Free and donation-funded. Code and assets are MIT-licensed (see [LICENSE](LICENS
 
 - **Dormant → awakening → active → settling**: a synchronized state machine with matching animations. While dormant the golem does not move, look around or make a sound. It stands up in about 1.25 s (invulnerable meanwhile) and settles down again after 30 s without a target.
 - **Wakes up** when a player attacks it or breaks stone/ore (`#stonegolem:wakes_stone_golem`) within 4 blocks.
+- **Ground slam** (melee): both fists up, impact 0.4 s later in front of it — 8 damage (4 hearts on Normal), only if the target is still in reach.
 - **Ground stomp**: 0.75 s wind-up, 3-block area damage, launches entities, block particles of the ground, 8 s cooldown.
+- **Rock summon** (targets 4–16 blocks away): one hand rises while the ground under the target crumbles (0.9 s warning), then one large and two smaller rocks erupt, throw everything on them ~8 blocks up and slowly sink away; 10 s cooldown. The fall hurts.
 - **Weakness by tags, not hard-coded items**: weapons in `#stonegolem:effective_against_stone_golem` (pickaxes) deal ×2, weapons in `#stonegolem:ineffective_against_stone_golem` (swords) and damage types in `#stonegolem:ineffective_against_stone_golem` (projectiles) deal ×0.5.
 - Immune to knockback, fall damage and drowning.
 - **Spawning**: rare, one at a time; in covered caves below Y 40 in every biome of `#stonegolem:spawns_stone_golem` and on stone surfaces in `#stonegolem:stone_golem_surface_spawns` (mountains, stony shores, windswept hills).

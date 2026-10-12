@@ -7,9 +7,12 @@
   "subtitles.stonegolem.entity.stone_golem.hurt": "Steingolem bröckelt",
   "subtitles.stonegolem.entity.stone_golem.death": "Steingolem zerfällt",
   "subtitles.stonegolem.entity.stone_golem.step": "Steingolem stapft",
-  "subtitles.stonegolem.entity.stone_golem.attack": "Steingolem schlägt zu",
   "subtitles.stonegolem.entity.stone_golem.awaken": "Steingolem erwacht",
   "subtitles.stonegolem.entity.stone_golem.settle": "Steingolem erstarrt",
   "subtitles.stonegolem.entity.stone_golem.stomp_windup": "Steingolem holt aus",
-  "subtitles.stonegolem.entity.stone_golem.stomp": "Boden bebt"
+  "subtitles.stonegolem.entity.stone_golem.stomp": "Boden bebt",
+  "entity.stonegolem.rising_rock": "Aufsteigender Fels",
+  "subtitles.stonegolem.entity.stone_golem.slam": "Steingolem schlägt auf den Boden",
+  "subtitles.stonegolem.entity.stone_golem.summon": "Steingolem ruft die Erde",
+  "subtitles.stonegolem.entity.rising_rock.erupt": "Fels bricht hervor"
 }

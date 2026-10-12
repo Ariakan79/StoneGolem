@@ -11,5 +11,7 @@ public class StoneGolemFabricClient implements ClientModInitializer {
     public void onInitializeClient() {
         ModelLayerRegistry.registerModelLayer(StoneGolemRenderer.LAYER, StoneGolemModel::createBodyLayer);
         EntityRenderers.register(ModEntities.STONE_GOLEM.get(), StoneGolemRenderer::new);
+        ModelLayerRegistry.registerModelLayer(RisingRockRenderer.LAYER, RisingRockModel::createBodyLayer);
+        EntityRenderers.register(ModEntities.RISING_ROCK.get(), RisingRockRenderer::new);
     }
 }

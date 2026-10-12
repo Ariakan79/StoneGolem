@@ -10,6 +10,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 public class StoneGolemFabricGameTests {
 
     private static final String ARENA = "stonegolem:arena";
+    private static final String ARENA_LARGE = "stonegolem:arena_large";
 
     @GameTest(structure = ARENA, maxTicks = StoneGolemGameTests.MAX_TICKS)
     public void spawnsDormant(GameTestHelper helper) {
@@ -54,5 +55,15 @@ public class StoneGolemFabricGameTests {
     @GameTest(structure = ARENA, maxTicks = StoneGolemGameTests.MAX_TICKS)
     public void spawnRulesRequireStoneAndCave(GameTestHelper helper) {
         StoneGolemGameTests.spawnRulesRequireStoneAndCave(helper);
+    }
+
+    @GameTest(structure = ARENA, maxTicks = StoneGolemGameTests.MAX_TICKS)
+    public void slamHitsAtImpact(GameTestHelper helper) {
+        StoneGolemGameTests.slamHitsAtImpact(helper);
+    }
+
+    @GameTest(structure = ARENA_LARGE, maxTicks = StoneGolemGameTests.MAX_TICKS, skyAccess = true)
+    public void rockSummonLaunchesTarget(GameTestHelper helper) {
+        StoneGolemGameTests.rockSummonLaunchesTarget(helper);
     }
 }

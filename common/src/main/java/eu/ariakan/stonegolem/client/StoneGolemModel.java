@@ -33,7 +33,8 @@ public class StoneGolemModel extends EntityModel<StoneGolemRenderState> {
     private final KeyframeAnimation awakenAnimation;
     private final KeyframeAnimation settleAnimation;
     private final KeyframeAnimation stompAnimation;
-    private final KeyframeAnimation attackAnimation;
+    private final KeyframeAnimation slamAnimation;
+    private final KeyframeAnimation summonAnimation;
 
     public StoneGolemModel(ModelPart root) {
         super(root);
@@ -43,7 +44,8 @@ public class StoneGolemModel extends EntityModel<StoneGolemRenderState> {
         this.awakenAnimation = StoneGolemAnimations.AWAKEN.bake(root);
         this.settleAnimation = StoneGolemAnimations.SETTLE.bake(root);
         this.stompAnimation = StoneGolemAnimations.STOMP.bake(root);
-        this.attackAnimation = StoneGolemAnimations.ATTACK.bake(root);
+        this.slamAnimation = StoneGolemAnimations.SLAM.bake(root);
+        this.summonAnimation = StoneGolemAnimations.SUMMON.bake(root);
     }
 
     public static LayerDefinition createBodyLayer() {
@@ -91,6 +93,7 @@ public class StoneGolemModel extends EntityModel<StoneGolemRenderState> {
         this.awakenAnimation.apply(state.awakenAnimationState, state.ageInTicks);
         this.settleAnimation.apply(state.settleAnimationState, state.ageInTicks);
         this.stompAnimation.apply(state.stompAnimationState, state.ageInTicks);
-        this.attackAnimation.apply(state.attackAnimationState, state.ageInTicks);
+        this.slamAnimation.apply(state.attackAnimationState, state.ageInTicks);
+        this.summonAnimation.apply(state.summonAnimationState, state.ageInTicks);
     }
 }

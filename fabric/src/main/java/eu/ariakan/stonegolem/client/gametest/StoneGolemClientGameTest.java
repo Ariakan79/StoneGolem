@@ -1,5 +1,6 @@
 package eu.ariakan.stonegolem.client.gametest;
 
+import eu.ariakan.stonegolem.config.StoneGolemBalance;
 import eu.ariakan.stonegolem.entity.GolemState;
 import eu.ariakan.stonegolem.entity.StoneGolem;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
@@ -23,6 +24,8 @@ public class StoneGolemClientGameTest implements FabricClientGameTest {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             world.getServer().runCommand("time set noon");
             world.getServer().runCommand("weather clear");
+            // Survive slams and falls during the test; launches still apply.
+            world.getServer().runCommand("effect give @p minecraft:resistance infinite 4 true");
             world.getServer().runCommand("execute as @p at @p run summon stonegolem:stone_golem ^ ^ ^6");
             context.waitTicks(5);
             lookAtGolem(context);
@@ -35,11 +38,39 @@ public class StoneGolemClientGameTest implements FabricClientGameTest {
             context.waitTicks(12);
             assertStates(context, world, GolemState.AWAKENING);
             context.takeScreenshot("stone_golem_2_awakening");
-            context.waitTicks(40);
-            assertStates(context, world, GolemState.ACTIVE);
-            context.takeScreenshot("stone_golem_3_active");
 
-            // Spawn egg: use it on the ground in front of the player.
+            // Once active, the distant player gets the rock summon: track the real client player's height every tick.
+            double startY = context.computeOnClient(mc -> mc.player.getY());
+            double maxY = startY;
+            int summonSeenAt = -1;
+            for (int tick = 0; tick < 160; tick++) {
+                context.waitTick();
+                maxY = Math.max(maxY, context.computeOnClient(mc -> mc.player.getY()));
+                GolemState state = world.getServer().computeOnServer(server -> serverGolems(server).getFirst().getState());
+                if (summonSeenAt < 0 && state == GolemState.SUMMONING) {
+                    summonSeenAt = tick;
+                }
+                if (summonSeenAt >= 0 && tick == summonSeenAt + StoneGolemBalance.SUMMON_WINDUP_TICKS + 3) {
+                    context.takeScreenshot("stone_golem_3_rocks");
+                }
+                if (summonSeenAt >= 0 && tick > summonSeenAt + 70) {
+                    break;
+                }
+            }
+            if (summonSeenAt < 0) {
+                throw new AssertionError("golem never summoned rocks against the distant player");
+            }
+            if (maxY - startY < 7.3 || maxY - startY > 8.7) {
+                throw new AssertionError("player should be thrown about 8 blocks up, rose " + (maxY - startY));
+            }
+            System.out.println("STONEGOLEM player launched " + (maxY - startY) + " blocks");
+            lookAtGolem(context);
+            context.waitTicks(5);
+            context.takeScreenshot("stone_golem_4_after_rocks");
+
+            // Spawn egg: remove the (now close) golem so the click hits the ground, then use the egg.
+            world.getServer().runCommand("kill @e[type=stonegolem:stone_golem]");
+            context.waitTicks(25);
             int before = countGolems(world);
             world.getServer().runCommand("item replace entity @p weapon.mainhand with stonegolem:stone_golem_spawn_egg");
             context.runOnClient(mc -> mc.player.setXRot(60.0F));
@@ -50,7 +81,7 @@ public class StoneGolemClientGameTest implements FabricClientGameTest {
             if (after != before + 1) {
                 throw new AssertionError("spawn egg should spawn one golem, had " + before + ", now " + after);
             }
-            context.takeScreenshot("stone_golem_4_spawn_egg");
+            context.takeScreenshot("stone_golem_5_spawn_egg");
         }
     }
 

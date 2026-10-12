@@ -11,4 +11,5 @@ public class StoneGolemRenderState extends LivingEntityRenderState {
     public final AnimationState settleAnimationState = new AnimationState();
     public final AnimationState stompAnimationState = new AnimationState();
     public final AnimationState attackAnimationState = new AnimationState();
+    public final AnimationState summonAnimationState = new AnimationState();
 }

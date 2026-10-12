@@ -3,6 +3,7 @@ package eu.ariakan.stonegolem.gametest;
 import eu.ariakan.stonegolem.Constants;
 import eu.ariakan.stonegolem.config.StoneGolemBalance;
 import eu.ariakan.stonegolem.entity.GolemState;
+import eu.ariakan.stonegolem.entity.RisingRock;
 import eu.ariakan.stonegolem.entity.StoneGolem;
 import eu.ariakan.stonegolem.event.StoneGolemEvents;
 import eu.ariakan.stonegolem.registry.ModEntities;
@@ -18,6 +19,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -34,29 +36,43 @@ import java.util.function.Consumer;
  * Loader-independent game tests. The loader modules only wrap these functions in their own registration mechanism
  * (Fabric: {@code @GameTest} methods, NeoForge: {@code RegisterGameTestsEvent}).
  * <p>
- * All tests run in {@code stonegolem:arena}, a 9x6x9 structure with a stone floor.
+ * Husks serve as dummy targets because, unlike zombies, they do not burn in daylight (fire damage would fake hits).
+ * <p>
+ * Tests run in {@code stonegolem:arena} (9x6x9, stone floor, barrier ceiling) unless they need room to fly:
+ * those use {@code stonegolem:arena_large} (17x12x17) with sky access.
  */
 public final class StoneGolemGameTests {
 
     public static final Identifier ARENA = Constants.id("arena");
+    public static final Identifier ARENA_LARGE = Constants.id("arena_large");
     public static final int MAX_TICKS = 200;
 
     private static final BlockPos CENTER = new BlockPos(4, 1, 4);
     private static final float TEST_HIT = 6.0F;
 
-    /** Test name to test function, in a stable order. */
-    public static final Map<String, Consumer<GameTestHelper>> TESTS = new LinkedHashMap<>();
+    /** A test function plus the structure it runs in. */
+    public record TestDefinition(Consumer<GameTestHelper> function, Identifier structure, boolean skyAccess) {
+    }
+
+    /** Test name to definition, in a stable order. */
+    public static final Map<String, TestDefinition> TESTS = new LinkedHashMap<>();
 
     static {
-        TESTS.put("spawns_dormant", StoneGolemGameTests::spawnsDormant);
-        TESTS.put("wakes_when_attacked", StoneGolemGameTests::wakesWhenAttacked);
-        TESTS.put("wakes_when_stone_mined_nearby", StoneGolemGameTests::wakesWhenStoneMinedNearby);
-        TESTS.put("pickaxe_beats_sword", StoneGolemGameTests::pickaxeBeatsSword);
-        TESTS.put("projectiles_are_weak", StoneGolemGameTests::projectilesAreWeak);
-        TESTS.put("stomp_hits_and_starts_cooldown", StoneGolemGameTests::stompHitsAndStartsCooldown);
-        TESTS.put("loot_table_drops_cobblestone", StoneGolemGameTests::lootTableDropsCobblestone);
-        TESTS.put("biome_spawn_lists_contain_golem", StoneGolemGameTests::biomeSpawnListsContainGolem);
-        TESTS.put("spawn_rules_require_stone_and_cave", StoneGolemGameTests::spawnRulesRequireStoneAndCave);
+        add("spawns_dormant", StoneGolemGameTests::spawnsDormant);
+        add("wakes_when_attacked", StoneGolemGameTests::wakesWhenAttacked);
+        add("wakes_when_stone_mined_nearby", StoneGolemGameTests::wakesWhenStoneMinedNearby);
+        add("pickaxe_beats_sword", StoneGolemGameTests::pickaxeBeatsSword);
+        add("projectiles_are_weak", StoneGolemGameTests::projectilesAreWeak);
+        add("stomp_hits_and_starts_cooldown", StoneGolemGameTests::stompHitsAndStartsCooldown);
+        add("slam_hits_at_impact", StoneGolemGameTests::slamHitsAtImpact);
+        TESTS.put("rock_summon_launches_target", new TestDefinition(StoneGolemGameTests::rockSummonLaunchesTarget, ARENA_LARGE, true));
+        add("loot_table_drops_cobblestone", StoneGolemGameTests::lootTableDropsCobblestone);
+        add("biome_spawn_lists_contain_golem", StoneGolemGameTests::biomeSpawnListsContainGolem);
+        add("spawn_rules_require_stone_and_cave", StoneGolemGameTests::spawnRulesRequireStoneAndCave);
+    }
+
+    private static void add(String name, Consumer<GameTestHelper> function) {
+        TESTS.put(name, new TestDefinition(function, ARENA, false));
     }
 
     private StoneGolemGameTests() {
@@ -91,7 +107,7 @@ public final class StoneGolemGameTests {
 
     public static void wakesWhenAttacked(GameTestHelper helper) {
         StoneGolem golem = spawnGolem(helper, CENTER);
-        Zombie attacker = helper.spawn(EntityTypes.ZOMBIE, CENTER.offset(3, 0, 0));
+        Zombie attacker = helper.spawn(EntityTypes.HUSK, CENTER.offset(3, 0, 0));
         attacker.setNoAi(true);
         DamageSource hit = helper.getLevel().damageSources().mobAttack(attacker);
         float[] health = new float[1];
@@ -161,7 +177,7 @@ public final class StoneGolemGameTests {
 
     public static void stompHitsAndStartsCooldown(GameTestHelper helper) {
         StoneGolem golem = spawnGolem(helper, CENTER);
-        Zombie victim = helper.spawn(EntityTypes.ZOMBIE, CENTER.offset(2, 0, 0));
+        Zombie victim = helper.spawn(EntityTypes.HUSK, CENTER.offset(2, 0, 0));
         victim.setNoAi(true);
         float victimHealth = victim.getHealth();
 
@@ -174,6 +190,54 @@ public final class StoneGolemGameTests {
                 .thenWaitUntil(() -> assertState(helper, golem, GolemState.ACTIVE))
                 // While the cooldown runs, the golem must not stomp again.
                 .thenExecuteFor(40, () -> helper.assertFalse(golem.getState() == GolemState.STOMPING, "stomp while on cooldown"))
+                .thenSucceed();
+    }
+
+    public static void slamHitsAtImpact(GameTestHelper helper) {
+        StoneGolem golem = spawnGolem(helper, CENTER);
+        Zombie target = helper.spawn(EntityTypes.HUSK, CENTER.offset(0, 0, 2));
+        target.setNoAi(true);
+        float[] health = new float[1];
+        helper.startSequence()
+                .thenIdle(2)
+                .thenExecute(() -> {
+                    health[0] = target.getHealth();
+                    helper.assertTrue(golem.doHurtTarget(helper.getLevel(), target), "slam must start");
+                    helper.assertValueEqual(target.getHealth(), health[0], "health before impact");
+                })
+                .thenIdle(StoneGolemBalance.SLAM_WINDUP_TICKS - 2)
+                .thenExecute(() -> helper.assertValueEqual(target.getHealth(), health[0], "health just before impact"))
+                .thenWaitUntil(() -> helper.assertTrue(target.getHealth() <= health[0] - 6.0F,
+                        "slam must deal about 8 damage at impact, health " + health[0] + " -> " + target.getHealth()))
+                .thenSucceed();
+    }
+
+    public static void rockSummonLaunchesTarget(GameTestHelper helper) {
+        StoneGolem golem = spawnGolem(helper, new BlockPos(2, 1, 2));
+        // An armor stand: has physics but no AI, so it stays on the warned spot.
+        ArmorStand target = helper.spawn(EntityTypes.ARMOR_STAND, new BlockPos(12, 1, 12));
+        double[] startY = new double[1];
+        double[] maxY = new double[1];
+        golem.wakeUp();
+        helper.startSequence()
+                .thenWaitUntil(() -> assertState(helper, golem, GolemState.ACTIVE))
+                .thenExecute(() -> {
+                    golem.setTarget(target);
+                    startY[0] = target.getY();
+                    maxY[0] = target.getY();
+                })
+                .thenWaitUntil(() -> assertState(helper, golem, GolemState.SUMMONING))
+                .thenWaitUntil(() -> {
+                    maxY[0] = Math.max(maxY[0], target.getY());
+                    helper.assertTrue(target.getY() < maxY[0] - 0.5, "waiting for the target to fall again");
+                })
+                .thenExecute(() -> {
+                    helper.assertTrue(maxY[0] - startY[0] >= 6.5 && maxY[0] - startY[0] <= 9.5,
+                            "rock must throw the target about 8 blocks up, got " + (maxY[0] - startY[0]));
+                    helper.assertTrue(golem.getSummonCooldown() > 0, "summon must start its cooldown");
+                })
+                .thenWaitUntil(() -> helper.assertTrue(helper.getLevel().getEntitiesOfClass(RisingRock.class,
+                        golem.getBoundingBox().inflate(32.0)).isEmpty(), "rocks must sink away"))
                 .thenSucceed();
     }
 

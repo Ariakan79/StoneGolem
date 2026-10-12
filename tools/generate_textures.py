@@ -125,6 +125,33 @@ def entity_texture():
     return img
 
 
+# Rising rock: name -> (u, v, width, height, depth), must match RisingRockModel.
+ROCK_BOXES = {
+    "base": (0, 0, 16, 32, 16),
+    "tier": (0, 48, 10, 6, 10),
+    "tip": (40, 48, 4, 6, 4),
+}
+
+
+def rock_texture():
+    rng = random.Random(99)
+    img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    for name, (u, v, w, h, d) in ROCK_BOXES.items():
+        for face, (fx, fy, fw, fh) in faces(u, v, w, h, d).items():
+            fill_stone(img, rng, fx, fy, fw, fh)
+            if face in ("top", "bottom"):
+                continue
+            cracks(img, rng, fx, fy, fw, fh, max(2, fw * fh // 25))
+            lichen(img, rng, fx, fy, fw, fh, max(1, fw * fh // 60))
+            # Fresh earth clinging to the lower part of the pillar.
+            if name == "base":
+                for py in range(fy + fh - 6, fy + fh):
+                    for px in range(fx, fx + fw):
+                        if rng.random() < (py - (fy + fh - 6)) / 6:
+                            img.putpixel((px, py), rng.choice(((94, 70, 50), (110, 82, 58), (80, 60, 44))))
+    return img
+
+
 def egg_mask():
     rows = [
         "......####......", ".....######.....", "....########....", "...##########...",
@@ -191,6 +218,7 @@ def main():
     entity.save(ASSETS / "entity/stone_golem/stone_golem.png")
     spawn_egg().save(ASSETS / "item/stone_golem_spawn_egg.png")
     golem_core().save(ASSETS / "item/golem_core.png")
+    rock_texture().save(ASSETS / "entity/rising_rock.png")
     icon(entity).save(ICON)
     print("Textures written to", ASSETS)
 

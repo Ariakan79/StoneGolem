@@ -12,11 +12,14 @@ public class StoneGolemRenderer extends MobRenderer<StoneGolem, StoneGolemRender
 
     public static final ModelLayerLocation LAYER = new ModelLayerLocation(Constants.id("stone_golem"), "main");
     private static final Identifier TEXTURE = Constants.id("textures/entity/stone_golem/stone_golem.png");
-    /** The 64x64 model is authored slightly small; scaling it keeps the texture budget and matches the hitbox. */
-    private static final float MODEL_SCALE = 1.1F;
+    /**
+     * The 64x64 model is authored small (27 px tall); scaling keeps the texture budget and brings it to iron golem
+     * height (2.7 blocks), matching the hitbox.
+     */
+    private static final float MODEL_SCALE = 1.6F;
 
     public StoneGolemRenderer(EntityRendererProvider.Context context) {
-        super(context, new StoneGolemModel(context.bakeLayer(LAYER)), 1.0F);
+        super(context, new StoneGolemModel(context.bakeLayer(LAYER)), 1.4F);
     }
 
     @Override
@@ -38,6 +41,7 @@ public class StoneGolemRenderer extends MobRenderer<StoneGolem, StoneGolemRender
         state.settleAnimationState.copyFrom(entity.settleAnimationState);
         state.stompAnimationState.copyFrom(entity.stompAnimationState);
         state.attackAnimationState.copyFrom(entity.attackAnimationState);
+        state.summonAnimationState.copyFrom(entity.summonAnimationState);
     }
 
     @Override

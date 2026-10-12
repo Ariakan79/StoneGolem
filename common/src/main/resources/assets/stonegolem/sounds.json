@@ -55,17 +55,6 @@
       }
     ]
   },
-  "entity.stone_golem.attack": {
-    "subtitle": "subtitles.stonegolem.entity.stone_golem.attack",
-    "sounds": [
-      {
-        "name": "minecraft:block.anvil.land",
-        "type": "event",
-        "pitch": 0.6,
-        "volume": 0.6
-      }
-    ]
-  },
   "entity.stone_golem.awaken": {
     "subtitle": "subtitles.stonegolem.entity.stone_golem.awaken",
     "sounds": [
@@ -124,6 +113,57 @@
         "name": "minecraft:block.deepslate.break",
         "type": "event",
         "pitch": 0.45,
+        "volume": 1.0
+      }
+    ]
+  },
+  "entity.stone_golem.slam": {
+    "subtitle": "subtitles.stonegolem.entity.stone_golem.slam",
+    "sounds": [
+      {
+        "name": "minecraft:block.anvil.land",
+        "type": "event",
+        "pitch": 0.55,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.deepslate.break",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 1.0
+      }
+    ]
+  },
+  "entity.stone_golem.summon": {
+    "subtitle": "subtitles.stonegolem.entity.stone_golem.summon",
+    "sounds": [
+      {
+        "name": "minecraft:block.grindstone.use",
+        "type": "event",
+        "pitch": 0.45,
+        "volume": 0.9
+      }
+    ]
+  },
+  "entity.rising_rock.erupt": {
+    "subtitle": "subtitles.stonegolem.entity.rising_rock.erupt",
+    "sounds": [
+      {
+        "name": "minecraft:block.deepslate.break",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:block.basalt.break",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:block.stone.break",
+        "type": "event",
+        "pitch": 0.5,
         "volume": 1.0
       }
     ]

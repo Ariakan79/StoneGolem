@@ -18,7 +18,7 @@ import static eu.ariakan.stonegolem.client.StoneGolemModel.RIGHT_LEG;
  * the model's rest pose: rotations in degrees, positions in pixels (positive Y is up, as in Blockbench).
  * <p>
  * Timings mirror {@link eu.ariakan.stonegolem.config.StoneGolemBalance}: awaken 1.25 s, settle 1.0 s, stomp wind-up
- * 0.75 s followed by a 0.3 s recovery.
+ * 0.75 s + 0.3 s recovery, slam impact at 0.4 s, summon wind-up 0.9 s + 0.4 s recovery.
  */
 public final class StoneGolemAnimations {
 
@@ -106,12 +106,37 @@ public final class StoneGolemAnimations {
                     key(0.0F, 0.0F, 0.0F, 0.0F), key(0.6F, -15.0F, 0.0F, 0.0F), key(0.75F, 10.0F, 0.0F, 0.0F), key(1.05F, 0.0F, 0.0F, 0.0F)))
             .build();
 
-    /** One-armed haymaker: swing back, drive forward, recover. */
-    public static final AnimationDefinition ATTACK = AnimationDefinition.Builder.withLength(0.5F)
+    /** Ground slam (regular melee): both fists up, smash into the ground in front at 0.4 s (= impact tick), recover. */
+    public static final AnimationDefinition SLAM = AnimationDefinition.Builder.withLength(0.8F)
             .addAnimation(RIGHT_ARM, rotation(
-                    key(0.0F, 0.0F, 0.0F, 0.0F), key(0.12F, 30.0F, 0.0F, -10.0F), key(0.25F, -100.0F, 0.0F, 10.0F), key(0.5F, 0.0F, 0.0F, 0.0F)))
+                    key(0.0F, 0.0F, 0.0F, 0.0F), key(0.25F, -170.0F, 0.0F, -10.0F), key(0.4F, -45.0F, 0.0F, 5.0F),
+                    key(0.55F, -45.0F, 0.0F, 5.0F), key(0.8F, 0.0F, 0.0F, 0.0F)))
+            .addAnimation(LEFT_ARM, rotation(
+                    key(0.0F, 0.0F, 0.0F, 0.0F), key(0.25F, -170.0F, 0.0F, 10.0F), key(0.4F, -45.0F, 0.0F, -5.0F),
+                    key(0.55F, -45.0F, 0.0F, -5.0F), key(0.8F, 0.0F, 0.0F, 0.0F)))
             .addAnimation(BODY, rotation(
-                    key(0.0F, 0.0F, 0.0F, 0.0F), key(0.12F, 0.0F, -12.5F, 0.0F), key(0.25F, 7.5F, 15.0F, 0.0F), key(0.5F, 0.0F, 0.0F, 0.0F)))
+                    key(0.0F, 0.0F, 0.0F, 0.0F), key(0.25F, -10.0F, 0.0F, 0.0F), key(0.4F, 30.0F, 0.0F, 0.0F),
+                    key(0.55F, 30.0F, 0.0F, 0.0F), key(0.8F, 0.0F, 0.0F, 0.0F)))
+            .addAnimation(BODY, position(
+                    key(0.0F, 0.0F, 0.0F, 0.0F), key(0.25F, 0.0F, 1.0F, 0.0F), key(0.4F, 0.0F, -2.0F, 0.0F),
+                    key(0.55F, 0.0F, -2.0F, 0.0F), key(0.8F, 0.0F, 0.0F, 0.0F)))
+            .build();
+
+    /**
+     * One-handed rock summon: the right hand rises slowly (telegraph, 0.9 s), then thrusts down, palm to the ground,
+     * as the rocks erupt; short recovery.
+     */
+    public static final AnimationDefinition SUMMON = AnimationDefinition.Builder.withLength(1.3F)
+            .addAnimation(RIGHT_ARM, rotation(
+                    key(0.0F, 0.0F, 0.0F, 0.0F), key(0.6F, -175.0F, 0.0F, -15.0F), key(0.75F, -170.0F, 0.0F, -20.0F),
+                    key(0.9F, -60.0F, 0.0F, 10.0F), key(1.05F, -60.0F, 0.0F, 10.0F), key(1.3F, 0.0F, 0.0F, 0.0F)))
+            .addAnimation(LEFT_ARM, rotation(
+                    key(0.0F, 0.0F, 0.0F, 0.0F), key(0.6F, 10.0F, 0.0F, -15.0F), key(0.9F, 15.0F, 0.0F, -20.0F), key(1.3F, 0.0F, 0.0F, 0.0F)))
+            .addAnimation(BODY, rotation(
+                    key(0.0F, 0.0F, 0.0F, 0.0F), key(0.6F, -7.5F, -10.0F, 0.0F), key(0.9F, 15.0F, 10.0F, 0.0F),
+                    key(1.05F, 15.0F, 10.0F, 0.0F), key(1.3F, 0.0F, 0.0F, 0.0F)))
+            .addAnimation(HEAD, rotation(
+                    key(0.0F, 0.0F, 0.0F, 0.0F), key(0.6F, -15.0F, 0.0F, 0.0F), key(0.9F, 15.0F, 0.0F, 0.0F), key(1.3F, 0.0F, 0.0F, 0.0F)))
             .build();
 
     private StoneGolemAnimations() {
