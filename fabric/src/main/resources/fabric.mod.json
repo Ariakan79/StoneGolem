@@ -13,6 +13,9 @@
     "entrypoints": {
         "main": [
             "eu.ariakan.stonegolem.StoneGolemFabric"
+        ],
+        "client": [
+            "eu.ariakan.stonegolem.client.StoneGolemFabricClient"
         ]
     },
     "depends": {

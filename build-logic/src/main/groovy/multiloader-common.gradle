@@ -13,6 +13,12 @@ java {
     withJavadocJar()
 }
 
+// Surface every compiler warning in our own code (acceptance criterion: no warnings from own code).
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll(['-Xlint:all', '-Xlint:-processing', '-Xlint:-classfile'])
+}
+
 tasks.withType(Jar).configureEach {
     from(rootProject.file('LICENSE')) {
         rename { "${it}_${mod_name}" }
