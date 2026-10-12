@@ -1,0 +1,131 @@
+{
+  "entity.stone_golem.ambient": {
+    "subtitle": "subtitles.stonegolem.entity.stone_golem.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:block.grindstone.use",
+        "type": "event",
+        "pitch": 0.4,
+        "volume": 0.35
+      }
+    ]
+  },
+  "entity.stone_golem.hurt": {
+    "subtitle": "subtitles.stonegolem.entity.stone_golem.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:block.stone.break",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:block.deepslate.break",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.0
+      }
+    ]
+  },
+  "entity.stone_golem.death": {
+    "subtitle": "subtitles.stonegolem.entity.stone_golem.death",
+    "sounds": [
+      {
+        "name": "minecraft:block.anvil.land",
+        "type": "event",
+        "pitch": 0.45,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.deepslate.break",
+        "type": "event",
+        "pitch": 0.4,
+        "volume": 1.0
+      }
+    ]
+  },
+  "entity.stone_golem.step": {
+    "subtitle": "subtitles.stonegolem.entity.stone_golem.step",
+    "sounds": [
+      {
+        "name": "minecraft:block.stone.step",
+        "type": "event",
+        "pitch": 0.55,
+        "volume": 0.9
+      }
+    ]
+  },
+  "entity.stone_golem.attack": {
+    "subtitle": "subtitles.stonegolem.entity.stone_golem.attack",
+    "sounds": [
+      {
+        "name": "minecraft:block.anvil.land",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.6
+      }
+    ]
+  },
+  "entity.stone_golem.awaken": {
+    "subtitle": "subtitles.stonegolem.entity.stone_golem.awaken",
+    "sounds": [
+      {
+        "name": "minecraft:block.grindstone.use",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:block.basalt.break",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 1.0
+      }
+    ]
+  },
+  "entity.stone_golem.settle": {
+    "subtitle": "subtitles.stonegolem.entity.stone_golem.settle",
+    "sounds": [
+      {
+        "name": "minecraft:block.stone.place",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:block.deepslate.place",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 1.0
+      }
+    ]
+  },
+  "entity.stone_golem.stomp_windup": {
+    "subtitle": "subtitles.stonegolem.entity.stone_golem.stomp_windup",
+    "sounds": [
+      {
+        "name": "minecraft:block.grindstone.use",
+        "type": "event",
+        "pitch": 0.65,
+        "volume": 0.8
+      }
+    ]
+  },
+  "entity.stone_golem.stomp": {
+    "subtitle": "subtitles.stonegolem.entity.stone_golem.stomp",
+    "sounds": [
+      {
+        "name": "minecraft:block.anvil.land",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:block.deepslate.break",
+        "type": "event",
+        "pitch": 0.45,
+        "volume": 1.0
+      }
+    ]
+  }
+}

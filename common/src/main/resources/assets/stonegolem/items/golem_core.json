@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "stonegolem:item/golem_core"
+  }
+}

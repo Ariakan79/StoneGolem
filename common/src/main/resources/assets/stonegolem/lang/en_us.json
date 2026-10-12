@@ -1,0 +1,15 @@
+{
+  "entity.stonegolem.stone_golem": "Stone Golem",
+  "item.stonegolem.stone_golem_spawn_egg": "Stone Golem Spawn Egg",
+  "item.stonegolem.golem_core": "Golem Core",
+  "item.stonegolem.golem_core.tooltip": "Pulses faintly…",
+  "subtitles.stonegolem.entity.stone_golem.ambient": "Stone Golem grinds",
+  "subtitles.stonegolem.entity.stone_golem.hurt": "Stone Golem cracks",
+  "subtitles.stonegolem.entity.stone_golem.death": "Stone Golem crumbles",
+  "subtitles.stonegolem.entity.stone_golem.step": "Stone Golem stomps",
+  "subtitles.stonegolem.entity.stone_golem.attack": "Stone Golem strikes",
+  "subtitles.stonegolem.entity.stone_golem.awaken": "Stone Golem awakens",
+  "subtitles.stonegolem.entity.stone_golem.settle": "Stone Golem settles",
+  "subtitles.stonegolem.entity.stone_golem.stomp_windup": "Stone Golem winds up",
+  "subtitles.stonegolem.entity.stone_golem.stomp": "Ground shakes"
+}
