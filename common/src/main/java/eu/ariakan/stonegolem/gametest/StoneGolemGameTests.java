@@ -1,0 +1,179 @@
+package eu.ariakan.stonegolem.gametest;
+
+import eu.ariakan.stonegolem.Constants;
+import eu.ariakan.stonegolem.config.StoneGolemBalance;
+import eu.ariakan.stonegolem.entity.GolemState;
+import eu.ariakan.stonegolem.entity.StoneGolem;
+import eu.ariakan.stonegolem.event.StoneGolemEvents;
+import eu.ariakan.stonegolem.registry.ModEntities;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Consumer;
+
+/**
+ * Loader-independent game tests. The loader modules only wrap these functions in their own registration mechanism
+ * (Fabric: {@code @GameTest} methods, NeoForge: {@code RegisterGameTestsEvent}).
+ * <p>
+ * All tests run in {@code stonegolem:arena}, a 9x6x9 structure with a stone floor.
+ */
+public final class StoneGolemGameTests {
+
+    public static final Identifier ARENA = Constants.id("arena");
+    public static final int MAX_TICKS = 200;
+
+    private static final BlockPos CENTER = new BlockPos(4, 1, 4);
+    private static final float TEST_HIT = 6.0F;
+
+    /** Test name to test function, in a stable order. */
+    public static final Map<String, Consumer<GameTestHelper>> TESTS = new LinkedHashMap<>();
+
+    static {
+        TESTS.put("spawns_dormant", StoneGolemGameTests::spawnsDormant);
+        TESTS.put("wakes_when_attacked", StoneGolemGameTests::wakesWhenAttacked);
+        TESTS.put("wakes_when_stone_mined_nearby", StoneGolemGameTests::wakesWhenStoneMinedNearby);
+        TESTS.put("pickaxe_beats_sword", StoneGolemGameTests::pickaxeBeatsSword);
+        TESTS.put("projectiles_are_weak", StoneGolemGameTests::projectilesAreWeak);
+        TESTS.put("stomp_hits_and_starts_cooldown", StoneGolemGameTests::stompHitsAndStartsCooldown);
+        TESTS.put("loot_table_drops_cobblestone", StoneGolemGameTests::lootTableDropsCobblestone);
+    }
+
+    private StoneGolemGameTests() {
+    }
+
+    private static StoneGolem spawnGolem(GameTestHelper helper, BlockPos pos) {
+        return helper.spawn(ModEntities.STONE_GOLEM.get(), pos);
+    }
+
+    private static void assertState(GameTestHelper helper, StoneGolem golem, GolemState expected) {
+        helper.assertValueEqual(golem.getState(), expected, "golem state");
+    }
+
+    public static void spawnsDormant(GameTestHelper helper) {
+        StoneGolem golem = spawnGolem(helper, CENTER);
+        Vec3[] start = new Vec3[1];
+        // Stays dormant and does not wander (falling onto the arena floor after spawning is fine).
+        helper.startSequence()
+                .thenIdle(5)
+                .thenExecute(() -> {
+                    assertState(helper, golem, GolemState.DORMANT);
+                    start[0] = golem.position();
+                })
+                .thenIdle(100)
+                .thenExecute(() -> {
+                    assertState(helper, golem, GolemState.DORMANT);
+                    helper.assertTrue(golem.getTarget() == null, "dormant golem must not have a target");
+                    helper.assertTrue(golem.position().subtract(start[0]).horizontalDistance() < 0.01, "dormant golem must not move: " + start[0] + " -> " + golem.position());
+                })
+                .thenSucceed();
+    }
+
+    public static void wakesWhenAttacked(GameTestHelper helper) {
+        StoneGolem golem = spawnGolem(helper, CENTER);
+        Zombie attacker = helper.spawn(EntityTypes.ZOMBIE, CENTER.offset(3, 0, 0));
+        attacker.setNoAi(true);
+        DamageSource hit = helper.getLevel().damageSources().mobAttack(attacker);
+        float[] health = new float[1];
+
+        helper.startSequence()
+                // Hit after the first tick: HurtByTargetGoal ignores hits stamped with the golem's tick 0.
+                .thenIdle(1)
+                .thenExecute(() -> {
+                    helper.assertTrue(golem.hurtServer(helper.getLevel(), hit, 1.0F), "first hit must land");
+                    assertState(helper, golem, GolemState.AWAKENING);
+                    health[0] = golem.getHealth();
+                })
+                // Wait out the regular hurt cooldown (i-frames) so only the awakening invulnerability can block.
+                .thenIdle(12)
+                .thenExecute(() -> {
+                    assertState(helper, golem, GolemState.AWAKENING);
+                    helper.assertFalse(golem.hurtServer(helper.getLevel(), hit, TEST_HIT), "golem must be invulnerable while awakening");
+                    helper.assertValueEqual(golem.getHealth(), health[0], "health while awakening");
+                })
+                .thenWaitUntil(() -> assertState(helper, golem, GolemState.ACTIVE))
+                .thenWaitUntil(() -> helper.assertTrue(golem.getTarget() == attacker, "attacker must become the target"))
+                .thenSucceed();
+    }
+
+    public static void wakesWhenStoneMinedNearby(GameTestHelper helper) {
+        StoneGolem near = spawnGolem(helper, new BlockPos(2, 1, 2));
+        StoneGolem far = spawnGolem(helper, new BlockPos(8, 1, 8));
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        BlockPos mined = helper.absolutePos(new BlockPos(1, 0, 1));
+
+        StoneGolemEvents.onBlockBroken(helper.getLevel(), player, mined, Blocks.STONE.defaultBlockState());
+        assertState(helper, near, GolemState.AWAKENING);
+        assertState(helper, far, GolemState.DORMANT);
+
+        // Non-stone blocks do not count.
+        StoneGolem other = spawnGolem(helper, new BlockPos(6, 1, 2));
+        StoneGolemEvents.onBlockBroken(helper.getLevel(), player, helper.absolutePos(new BlockPos(6, 0, 1)), Blocks.OAK_PLANKS.defaultBlockState());
+        assertState(helper, other, GolemState.DORMANT);
+        helper.succeed();
+    }
+
+    public static void pickaxeBeatsSword(GameTestHelper helper) {
+        float pickaxeDamage = damageWith(helper, new BlockPos(2, 1, 4), new ItemStack(Items.IRON_PICKAXE));
+        float swordDamage = damageWith(helper, new BlockPos(6, 1, 4), new ItemStack(Items.IRON_SWORD));
+        helper.assertTrue(pickaxeDamage > swordDamage,
+                "pickaxe (" + pickaxeDamage + ") must hurt more than sword (" + swordDamage + ")");
+        helper.assertTrue(pickaxeDamage >= swordDamage * 3.0F, "pickaxe should deal about 4x the sword damage (2.0 vs 0.5)");
+        helper.succeed();
+    }
+
+    private static float damageWith(GameTestHelper helper, BlockPos pos, ItemStack weapon) {
+        StoneGolem golem = spawnGolem(helper, pos);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, weapon);
+        float before = golem.getHealth();
+        golem.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(player), TEST_HIT);
+        return before - golem.getHealth();
+    }
+
+    public static void projectilesAreWeak(GameTestHelper helper) {
+        DamageSource arrow = new DamageSource(helper.getLevel().registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(DamageTypes.ARROW));
+        DamageSource generic = helper.getLevel().damageSources().generic();
+        helper.assertValueEqual(StoneGolem.getDamageMultiplier(arrow), StoneGolemBalance.INEFFECTIVE_DAMAGE_TYPE_MULTIPLIER, "arrow multiplier");
+        helper.assertValueEqual(StoneGolem.getDamageMultiplier(generic), 1.0F, "generic multiplier");
+        helper.succeed();
+    }
+
+    public static void stompHitsAndStartsCooldown(GameTestHelper helper) {
+        StoneGolem golem = spawnGolem(helper, CENTER);
+        Zombie victim = helper.spawn(EntityTypes.ZOMBIE, CENTER.offset(2, 0, 0));
+        victim.setNoAi(true);
+        float victimHealth = victim.getHealth();
+
+        helper.startSequence()
+                .thenIdle(1)
+                .thenExecute(() -> golem.hurtServer(helper.getLevel(), helper.getLevel().damageSources().mobAttack(victim), 1.0F))
+                .thenWaitUntil(() -> assertState(helper, golem, GolemState.STOMPING))
+                .thenWaitUntil(() -> helper.assertTrue(golem.getStompCooldown() > 0, "stomp must start the cooldown"))
+                .thenExecute(() -> helper.assertTrue(victim.getHealth() < victimHealth, "stomp must hurt nearby entities"))
+                .thenWaitUntil(() -> assertState(helper, golem, GolemState.ACTIVE))
+                // While the cooldown runs, the golem must not stomp again.
+                .thenExecuteFor(40, () -> helper.assertFalse(golem.getState() == GolemState.STOMPING, "stomp while on cooldown"))
+                .thenSucceed();
+    }
+
+    public static void lootTableDropsCobblestone(GameTestHelper helper) {
+        StoneGolem golem = spawnGolem(helper, CENTER);
+        golem.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), Float.MAX_VALUE);
+        helper.succeedWhen(() -> helper.assertItemEntityPresent(Items.COBBLESTONE, CENTER, 3.0));
+    }
+}

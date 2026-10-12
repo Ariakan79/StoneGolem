@@ -2,6 +2,7 @@ package eu.ariakan.stonegolem;
 
 import eu.ariakan.stonegolem.entity.StoneGolem;
 import eu.ariakan.stonegolem.event.StoneGolemEvents;
+import eu.ariakan.stonegolem.gametest.StoneGolemNeoForgeGameTests;
 import eu.ariakan.stonegolem.platform.NeoForgeRegistrar;
 import eu.ariakan.stonegolem.platform.Services;
 import eu.ariakan.stonegolem.registry.ModEntities;
@@ -29,6 +30,7 @@ public class StoneGolemNeoForge {
         StoneGolemMod.init();
         Services.REGISTRAR.register(NeoForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS, "stone_golem_spawns",
                 () -> StoneGolemSpawnsBiomeModifier.CODEC);
+        StoneGolemNeoForgeGameTests.register(modBus);
 
         modBus.addListener(StoneGolemNeoForge::onAttributeCreation);
         modBus.addListener(StoneGolemNeoForge::onRegisterSpawnPlacements);

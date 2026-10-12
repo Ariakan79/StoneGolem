@@ -146,20 +146,26 @@ public class StoneGolem extends PathfinderMob {
         }
     }
 
-    /** Goals only run while the golem is awake; disabling their control flags also stops running goals. */
+    /** Goals only run while the golem is active; disabling their control flags also stops running goals. */
     private void applyStateToAi(GolemState state) {
-        for (Goal.Flag flag : AI_FLAGS) {
-            if (state == GolemState.ACTIVE) {
-                this.goalSelector.enableControlFlag(flag);
-                this.targetSelector.enableControlFlag(flag);
-            } else {
-                this.goalSelector.disableControlFlag(flag);
-                // Keep the current target while stomping, drop it otherwise.
-                if (state != GolemState.STOMPING) {
-                    this.targetSelector.disableControlFlag(flag);
-                }
-            }
+        if (state == GolemState.ACTIVE) {
+            super.updateControlFlags();
+            this.targetSelector.enableControlFlag(Goal.Flag.TARGET);
+            return;
         }
+        for (Goal.Flag flag : AI_FLAGS) {
+            this.goalSelector.disableControlFlag(flag);
+        }
+        // Keep the current target while stomping, drop targeting otherwise.
+        if (state != GolemState.STOMPING) {
+            this.targetSelector.disableControlFlag(Goal.Flag.TARGET);
+        }
+    }
+
+    /** Vanilla re-enables the movement flags every few ticks; keep them disabled unless the golem is active. */
+    @Override
+    protected void updateControlFlags() {
+        this.applyStateToAi(this.getState());
     }
 
     public boolean isDormant() {
@@ -330,11 +336,6 @@ public class StoneGolem extends PathfinderMob {
             return StoneGolemBalance.INEFFECTIVE_DAMAGE_TYPE_MULTIPLIER;
         }
         return 1.0F;
-    }
-
-    @Override
-    protected boolean isImmobile() {
-        return super.isImmobile() || !this.getState().isAwake();
     }
 
     // --- Ticking and client animation ---------------------------------------------------------------------------
