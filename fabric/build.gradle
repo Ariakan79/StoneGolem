@@ -14,6 +14,10 @@ loom {
         accessWidenerPath.set(aw)
     }
     runs {
+        // Optional for spawn testing: ./gradlew :fabric:runClient -PspawnWeight=500
+        if (project.hasProperty('spawnWeight')) {
+            configureEach { vmArg("-Dstonegolem.spawnWeight=${project.property('spawnWeight')}") }
+        }
         client {
             client()
             setConfigName('Fabric Client')
