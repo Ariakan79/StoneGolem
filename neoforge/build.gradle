@@ -21,6 +21,11 @@ neoForge {
         }
         client {
             client()
+            // Optional extra game arguments, e.g. -PclientArgs="--username Tester --quickPlayMultiplayer localhost:25565"
+            // (Gradle's --args would replace the launcher's own arguments here).
+            if (project.hasProperty('clientArgs')) {
+                programArguments.addAll(project.property('clientArgs').toString().split(' ').toList())
+            }
             gameDirectory = this.mkdir(this.file('runs/client'))
         }
         data {
