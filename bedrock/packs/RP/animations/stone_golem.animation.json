@@ -214,7 +214,6 @@
     },
     "animation.stonegolem.settle": {
       "animation_length": 1.0,
-      "hold_on_last_frame": true,
       "bones": {
         "body": {
           "position": {
@@ -306,7 +305,8 @@
             ]
           }
         }
-      }
+      },
+      "loop": "hold_on_last_frame"
     },
     "animation.stonegolem.stomp": {
       "animation_length": 1.05,

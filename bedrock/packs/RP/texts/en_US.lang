@@ -1,5 +1,5 @@
 pack.name=Stone Golem
-pack.description=An ancient, sluggish guardian of stone.
+pack.description=An ancient, sluggish guardian of stone. (Version {{VERSION}})
 entity.stonegolem:stone_golem.name=Stone Golem
 entity.stonegolem:rising_rock.name=Rising Rock
 item.spawn_egg.entity.stonegolem:stone_golem.name=Stone Golem Spawn Egg

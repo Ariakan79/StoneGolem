@@ -1,5 +1,5 @@
 pack.name=Steingolem
-pack.description=Ein uralter, träger Wächter aus Stein.
+pack.description=Ein uralter, träger Wächter aus Stein. (Version {{VERSION}})
 entity.stonegolem:stone_golem.name=Steingolem
 entity.stonegolem:rising_rock.name=Aufsteigender Fels
 item.spawn_egg.entity.stonegolem:stone_golem.name=Steingolem-Spawn-Ei
