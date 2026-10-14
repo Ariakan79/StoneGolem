@@ -23,6 +23,16 @@ You find it as a mossy boulder, deep in stone caves or on rocky mountain slopes.
 
 ![Size comparison with an iron golem and a villager](docs/media/size_comparison.jpg)
 
+## Build your own guardian
+
+Like an iron golem, you can build a Stone Golem: **four stone in a T** (two stacked for the body, one on each side as arms) and a **block of diamond on top, placed last**. Grass and flowers next to the leg do not get in the way.
+
+![How to build a Stone Golem](docs/media/build_recipe.jpg)
+
+![Building a Stone Golem](docs/media/build_golem.gif)
+
+A built golem is your **guardian**: it never attacks players (not even when hit), never goes back to sleep, does not despawn, and hunts monsters around it with all three attacks — its rock pillars leave players alone. *(Java edition; coming to Bedrock next.)*
+
 ## Features
 
 - **Neutral, until provoked.** It only fights whoever attacked it, and settles back into a boulder after 30 seconds without a target.
@@ -31,6 +41,7 @@ You find it as a mossy boulder, deep in stone caves or on rocky mountain slopes.
 - **Bring a pickaxe.** Pickaxes deal double damage; swords and arrows only half. Driven by tags, so packs and other mods can change what counts.
 - Immune to knockback, fall damage and drowning; invulnerable while standing up.
 - **Spawns rarely**, one at a time: in stone caves below Y 40 and on stony mountain surfaces.
+- **Buildable** from four stone and a block of diamond as a guardian that protects players (blocks are data-driven via `#stonegolem:stone_golem_body` / `#stonegolem:stone_golem_head`).
 - **Drops** cobblestone, moss and, rarely (more with Looting), a pulsing **Golem Core** — the key to a future update.
 - English and German.
 

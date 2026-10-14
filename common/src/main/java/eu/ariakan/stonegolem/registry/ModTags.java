@@ -36,6 +36,10 @@ public final class ModTags {
         public static final TagKey<Block> WAKES_STONE_GOLEM = TagKey.create(Registries.BLOCK, Constants.id("wakes_stone_golem"));
         /** Natural spawns require one of these blocks below the golem. */
         public static final TagKey<Block> STONE_GOLEM_SPAWNABLE_ON = TagKey.create(Registries.BLOCK, Constants.id("stone_golem_spawnable_on"));
+        /** Body and arms of a built golem (stone by default). */
+        public static final TagKey<Block> STONE_GOLEM_BODY = TagKey.create(Registries.BLOCK, Constants.id("stone_golem_body"));
+        /** Head of a built golem, placed last (block of diamond by default). */
+        public static final TagKey<Block> STONE_GOLEM_HEAD = TagKey.create(Registries.BLOCK, Constants.id("stone_golem_head"));
 
         private Blocks() {
         }

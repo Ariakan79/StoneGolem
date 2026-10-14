@@ -40,10 +40,16 @@ public class RisingRock extends Entity {
     private static final float BASE_RADIUS = 0.75F;
 
     private final Set<Integer> launched = new HashSet<>();
+    /** Rocks of a player-built golem leave players alone. */
+    private boolean sparesPlayers;
 
     public RisingRock(EntityType<? extends RisingRock> type, Level level) {
         super(type, level);
         this.noPhysics = true;
+    }
+
+    public void setSparesPlayers(boolean sparesPlayers) {
+        this.sparesPlayers = sparesPlayers;
     }
 
     public void setScale(float scale) {
@@ -118,7 +124,7 @@ public class RisingRock extends Entity {
     }
 
     private boolean canLaunch(LivingEntity entity) {
-        if (!entity.isAlive() || entity instanceof StoneGolem || entity.isSpectator()) {
+        if (!entity.isAlive() || entity instanceof StoneGolem || entity.isSpectator() || (this.sparesPlayers && entity instanceof Player)) {
             return false;
         }
         return !(entity instanceof Player player) || !player.getAbilities().flying;

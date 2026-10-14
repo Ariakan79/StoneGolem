@@ -1,6 +1,7 @@
 package eu.ariakan.stonegolem;
 
 import eu.ariakan.stonegolem.entity.StoneGolem;
+import eu.ariakan.stonegolem.entity.StoneGolemBuilding;
 import eu.ariakan.stonegolem.event.StoneGolemEvents;
 import eu.ariakan.stonegolem.gametest.StoneGolemNeoForgeGameTests;
 import eu.ariakan.stonegolem.platform.NeoForgeRegistrar;
@@ -19,6 +20,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
@@ -36,6 +38,7 @@ public class StoneGolemNeoForge {
         modBus.addListener(StoneGolemNeoForge::onRegisterSpawnPlacements);
         modBus.addListener(StoneGolemNeoForge::onBuildCreativeTabs);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, StoneGolemNeoForge::onBlockBreak);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, StoneGolemNeoForge::onBlockPlace);
     }
 
     private static void onAttributeCreation(EntityAttributeCreationEvent event) {
@@ -52,6 +55,12 @@ public class StoneGolemNeoForge {
             event.accept(ModItems.STONE_GOLEM_SPAWN_EGG.get());
         } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(ModItems.GOLEM_CORE.get());
+        }
+    }
+
+    private static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
+        if (!event.isCanceled() && event.getLevel() instanceof Level level) {
+            StoneGolemBuilding.onBlockPlaced(level, event.getPos());
         }
     }
 

@@ -33,6 +33,9 @@ import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -73,6 +76,8 @@ public class StoneGolem extends PathfinderMob {
     private int ticksWithoutTarget;
     private int stompCooldown;
     private int summonCooldown;
+    /** Built by a player (see {@link StoneGolemBuilding}): guards players instead of sleeping and retaliating. */
+    private boolean playerCreated;
     private @Nullable BlockPos summonPos;
     private int slamTicks;
     private @Nullable LivingEntity slamTarget;
@@ -131,6 +136,9 @@ public class StoneGolem extends PathfinderMob {
         this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
         // No "nearest attackable target" goal: the golem is neutral and only retaliates.
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
+        // Only for built golems: hunt monsters around, like an iron golem (creepers are left alone).
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false,
+                (target, level) -> this.playerCreated && target instanceof Enemy && !(target instanceof Creeper)));
     }
 
     // --- State machine ------------------------------------------------------------------------------------------
@@ -187,6 +195,26 @@ public class StoneGolem extends PathfinderMob {
         this.applyStateToAi(this.getState());
     }
 
+    public boolean isPlayerCreated() {
+        return this.playerCreated;
+    }
+
+    /** Built golems guard players: they never target them and do not despawn. */
+    public void setPlayerCreated(boolean playerCreated) {
+        this.playerCreated = playerCreated;
+        if (playerCreated) {
+            this.setPersistenceRequired();
+        }
+    }
+
+    @Override
+    public boolean canAttack(LivingEntity target) {
+        if (this.playerCreated && target instanceof Player) {
+            return false;
+        }
+        return super.canAttack(target);
+    }
+
     public boolean isDormant() {
         return this.getState() == GolemState.DORMANT;
     }
@@ -239,7 +267,7 @@ public class StoneGolem extends PathfinderMob {
     private void tickActive() {
         LivingEntity target = this.getTarget();
         if (target == null || !target.isAlive()) {
-            if (++this.ticksWithoutTarget >= StoneGolemBalance.RETURN_TO_DORMANT_TICKS) {
+            if (!this.playerCreated && ++this.ticksWithoutTarget >= StoneGolemBalance.RETURN_TO_DORMANT_TICKS) {
                 this.setState(GolemState.SETTLING);
             }
             return;
@@ -323,6 +351,7 @@ public class StoneGolem extends PathfinderMob {
         RisingRock rock = ModEntities.RISING_ROCK.get().create(level, EntitySpawnReason.MOB_SUMMONED);
         if (rock != null) {
             rock.setScale(scale);
+            rock.setSparesPlayers(this.playerCreated);
             rock.snapTo(x, y, z, this.random.nextFloat() * 360.0F, 0.0F);
             level.addFreshEntity(rock);
         }
@@ -381,7 +410,10 @@ public class StoneGolem extends PathfinderMob {
         if (entity == this || !entity.isAlive() || entity instanceof StoneGolem) {
             return false;
         }
-        return !(entity instanceof Player player) || !(player.isCreative() || player.isSpectator());
+        if (entity instanceof Player player) {
+            return !this.playerCreated && !player.isCreative() && !player.isSpectator();
+        }
+        return true;
     }
 
     public int getStompCooldown() {
@@ -556,6 +588,7 @@ public class StoneGolem extends PathfinderMob {
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
+        output.putBoolean("player_created", this.playerCreated);
         output.putBoolean("dormant", !this.getState().isAwake() && this.getState() != GolemState.AWAKENING);
         output.putInt("stomp_cooldown", this.stompCooldown);
         output.putInt("summon_cooldown", this.summonCooldown);
@@ -564,6 +597,7 @@ public class StoneGolem extends PathfinderMob {
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
+        this.playerCreated = input.getBooleanOr("player_created", false);
         // Transitional states (waking, stomping, settling) collapse to their stable end state on load.
         this.applyState(input.getBooleanOr("dormant", true) ? GolemState.DORMANT : GolemState.ACTIVE);
         this.stompCooldown = input.getIntOr("stomp_cooldown", 0);

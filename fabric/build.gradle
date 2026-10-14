@@ -54,6 +54,9 @@ loom {
             ideConfigGenerated(true)
             vmArg('-Dfabric.client.gametest')
             vmArg('-Dstonegolem.showcase')
+            if (project.hasProperty('showcaseOnly')) {
+                vmArg("-Dstonegolem.showcase.only=${project.property('showcaseOnly')}")
+            }
             if (project.hasProperty('showcaseFrames')) {
                 vmArg("-Dstonegolem.showcase.frames=${project.property('showcaseFrames')}")
             }

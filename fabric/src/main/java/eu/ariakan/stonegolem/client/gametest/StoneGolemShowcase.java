@@ -3,6 +3,7 @@ package eu.ariakan.stonegolem.client.gametest;
 import eu.ariakan.stonegolem.entity.GolemState;
 import eu.ariakan.stonegolem.entity.RisingRock;
 import eu.ariakan.stonegolem.entity.StoneGolem;
+import eu.ariakan.stonegolem.entity.StoneGolemBuilding;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext;
@@ -42,6 +43,8 @@ public class StoneGolemShowcase implements FabricClientGameTest {
     /** Runs before every rendered tick, e.g. to move the camera. */
     private Runnable camera = () -> { };
     private int baseX;
+    private int baseZ;
+    private java.util.List<BlockPos> meadows = java.util.List.of();
     private int cx;
     private int cy;
     private int cz;
@@ -52,9 +55,17 @@ public class StoneGolemShowcase implements FabricClientGameTest {
             return;
         }
         this.context = context;
-        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+        // A normal (not superflat) world with a fixed seed, so the landscape is real and reproducible.
+        try (TestSingleplayerContext world = context.worldBuilder()
+                .setUseConsistentSettings(false)
+                .adjustSettings(settings -> settings.setSeed("stonegolem"))
+                .create()) {
             this.server = world.getServer();
             setup();
+            if ("build".equals(System.getProperty("stonegolem.showcase.only"))) {
+                buildScene();
+                return;
+            }
 
             // 1: a mossy boulder in the meadow wakes up and calls the first rocks (side view, golem at G, target at T).
             stage("intro", 9);
@@ -128,6 +139,31 @@ public class StoneGolemShowcase implements FabricClientGameTest {
         }
     }
 
+    /** How to build a golem: the blocks appear one by one, the diamond block last, then the golem rises. */
+    private void buildScene() {
+        stage("build", 30);
+        run("kill %s", golem());
+        fixedCamera(4.5, 2.2, -6.5, 0, 1.6, 0);
+        film(20, NORMAL);
+        String[][] blocks = {{"0 0 0", "stone"}, {"0 1 0", "stone"}, {"-1 1 0", "stone"}, {"1 1 0", "stone"}};
+        for (String[] block : blocks) {
+            String[] d = block[0].split(" ");
+            run("setblock %d %d %d minecraft:%s", cx + Integer.parseInt(d[0]), cy + Integer.parseInt(d[1]), cz + Integer.parseInt(d[2]), block[1]);
+            film(12, NORMAL);
+        }
+        shot("build_1_body");
+        run("setblock %d %d %d minecraft:diamond_block", cx, cy + 2, cz);
+        film(16, NORMAL);
+        shot("build_2_complete");
+        BlockPos head = new BlockPos(cx, cy + 2, cz);
+        server.runOnServer(s -> StoneGolemBuilding.tryBuild(s.overworld(), head));
+        film(18, NORMAL);
+        shot("build_3_rising");
+        film(50, NORMAL);
+        shot("build_4_guardian");
+        scene("end");
+    }
+
     // --- Stage ------------------------------------------------------------------------------------------------------
 
     private void setup() {
@@ -149,11 +185,15 @@ public class StoneGolemShowcase implements FabricClientGameTest {
             var found = s.overworld().findClosestBiome3d(b -> b.is(Biomes.PLAINS), BlockPos.ZERO.atY(64), 6400, 32, 64);
             return found == null ? BlockPos.ZERO : found.getFirst();
         });
-        baseX = plains.getX() - 48 * 3;
-        cz = plains.getZ();
-        run("forceload add %d %d %d %d", baseX, cz - 32, baseX + 48 * 7, cz + 32);
-        run("tp @p %d 150 %d", plains.getX(), cz);
-        context.waitTicks(160);
+        baseX = plains.getX();
+        baseZ = plains.getZ();
+        run("tp @p %d 150 %d", plains.getX(), baseZ);
+        context.waitTicks(100);
+        meadows = server.computeOnServer(s -> findMeadows(s, 7));
+        System.out.println("[showcase] meadows " + meadows);
+        if (meadows.isEmpty()) {
+            throw new AssertionError("no flat meadow found for the showcase");
+        }
         context.getInput().pressKey(290); // F1: hide the HUD
         context.waitTicks(10);
         context.runOnClient(mc -> mc.gui.toastManager().clear());
@@ -173,15 +213,12 @@ public class StoneGolemShowcase implements FabricClientGameTest {
             run("tp @e[type=%s] ~ -80 ~", type);
             run("kill @e[type=%s]", type);
         }
-        cx = baseX + stage * 48;
-        run("tp @p %d 150 %d", cx, cz);
-        context.waitTicks(40);
-        cy = server.computeOnServer(s -> s.overworld().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, cx, cz));
-        run("fill %d %d %d %d %d %d minecraft:air", cx - 14, cy, cz - 18, cx + 14, cy + 14, cz + 8);
-        run("fill %d %d %d %d %d %d minecraft:dirt", cx - 14, cy - 3, cz - 18, cx + 14, cy - 2, cz + 8);
-        run("fill %d %d %d %d %d %d minecraft:grass_block", cx - 14, cy - 1, cz - 18, cx + 14, cy - 1, cz + 8);
-        run("fill %d %d %d %d %d %d minecraft:short_grass replace minecraft:air", cx - 14, cy, cz - 18, cx - 6, cy, cz + 8);
-        run("fill %d %d %d %d %d %d minecraft:short_grass replace minecraft:air", cx + 6, cy, cz - 18, cx + 14, cy, cz + 8);
+        BlockPos spot = meadows.get(Math.min(stage - 1, meadows.size() - 1));
+        cx = spot.getX();
+        cy = spot.getY();
+        cz = spot.getZ();
+        run("tp @p %d %d %d", cx, cy + 20, cz + 12);
+        context.waitTicks(60);
         run("summon stonegolem:stone_golem %s", at(0, 0, 0));
         run("execute positioned %s run tag @e[type=stonegolem:stone_golem,distance=..2] add %s", at(0, 0, 0), golemTag());
         run("tp %s %s 0 0", golem(), at(0, 0, 0));
@@ -190,6 +227,54 @@ public class StoneGolemShowcase implements FabricClientGameTest {
         prepareTargets(target(), at(0, 0, 0));
         context.waitTicks(10);
         scene(name);
+    }
+
+    /**
+     * Collects spots for all scenes once: untouched, naturally flat grass meadows without trees or water, at least
+     * 64 blocks apart, searched in rings around the plains centre, so nothing has to be terraformed.
+     */
+    private java.util.List<BlockPos> findMeadows(MinecraftServer s, int count) {
+        var level = s.overworld();
+        java.util.List<BlockPos> spots = new java.util.ArrayList<>();
+        for (int r = 0; r <= 640 && spots.size() < count; r += 24) {
+            int points = Math.max(1, (int) (2 * Math.PI * r / 24));
+            for (int i = 0; i < points && spots.size() < count; i++) {
+                double angle = 2 * Math.PI * i / points;
+                int x = baseX + (int) (Math.cos(angle) * r);
+                int z = baseZ + (int) (Math.sin(angle) * r);
+                if (spots.stream().anyMatch(p -> p.distSqr(new BlockPos(x, p.getY(), z)) < 64 * 64)) {
+                    continue;
+                }
+                if (isFlatMeadow(level, x, z)) {
+                    spots.add(new BlockPos(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z), z));
+                }
+            }
+        }
+        return spots;
+    }
+
+    private static boolean isFlatMeadow(net.minecraft.server.level.ServerLevel level, int x, int z) {
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+        int notGrass = 0;
+        for (int dx = -12; dx <= 12; dx += 3) {
+            for (int dz = -16; dz <= 8; dz += 3) {
+                int y = level.getChunk((x + dx) >> 4, (z + dz) >> 4).getHeight(Heightmap.Types.MOTION_BLOCKING, (x + dx) & 15, (z + dz) & 15) + 1;
+                var ground = level.getBlockState(new BlockPos(x + dx, y - 1, z + dz));
+                if (!ground.getFluidState().isEmpty() || ground.is(net.minecraft.tags.BlockTags.LEAVES) || ground.is(net.minecraft.tags.BlockTags.LOGS)) {
+                    return false;
+                }
+                if (!ground.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK) && ++notGrass > 6) {
+                    return false;
+                }
+                min = Math.min(min, y);
+                max = Math.max(max, y);
+                if (max - min > 2) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private String golemTag() {

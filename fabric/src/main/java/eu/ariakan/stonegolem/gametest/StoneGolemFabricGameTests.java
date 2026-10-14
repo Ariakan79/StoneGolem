@@ -66,4 +66,19 @@ public class StoneGolemFabricGameTests {
     public void rockSummonLaunchesTarget(GameTestHelper helper) {
         StoneGolemGameTests.rockSummonLaunchesTarget(helper);
     }
+
+    @GameTest(structure = ARENA, maxTicks = StoneGolemGameTests.MAX_TICKS)
+    public void buildGolemByPlacingHead(GameTestHelper helper) {
+        StoneGolemGameTests.buildGolemByPlacingHead(helper);
+    }
+
+    @GameTest(structure = ARENA, maxTicks = StoneGolemGameTests.MAX_TICKS)
+    public void wrongShapeBuildsNothing(GameTestHelper helper) {
+        StoneGolemGameTests.wrongShapeBuildsNothing(helper);
+    }
+
+    @GameTest(structure = ARENA, maxTicks = StoneGolemGameTests.MAX_TICKS)
+    public void builtGolemGuardsPlayers(GameTestHelper helper) {
+        StoneGolemGameTests.builtGolemGuardsPlayers(helper);
+    }
 }

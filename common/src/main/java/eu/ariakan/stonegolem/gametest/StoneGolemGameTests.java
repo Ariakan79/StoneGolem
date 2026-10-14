@@ -5,6 +5,12 @@ import eu.ariakan.stonegolem.config.StoneGolemBalance;
 import eu.ariakan.stonegolem.entity.GolemState;
 import eu.ariakan.stonegolem.entity.RisingRock;
 import eu.ariakan.stonegolem.entity.StoneGolem;
+import java.util.List;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.Direction;
+import eu.ariakan.stonegolem.entity.StoneGolemBuilding;
 import eu.ariakan.stonegolem.event.StoneGolemEvents;
 import eu.ariakan.stonegolem.registry.ModEntities;
 import eu.ariakan.stonegolem.registry.ModTags;
@@ -67,6 +73,9 @@ public final class StoneGolemGameTests {
         add("slam_hits_at_impact", StoneGolemGameTests::slamHitsAtImpact);
         TESTS.put("rock_summon_launches_target", new TestDefinition(StoneGolemGameTests::rockSummonLaunchesTarget, ARENA_LARGE, true));
         add("loot_table_drops_cobblestone", StoneGolemGameTests::lootTableDropsCobblestone);
+        add("build_golem_by_placing_head", StoneGolemGameTests::buildGolemByPlacingHead);
+        add("wrong_shape_builds_nothing", StoneGolemGameTests::wrongShapeBuildsNothing);
+        add("built_golem_guards_players", StoneGolemGameTests::builtGolemGuardsPlayers);
         add("biome_spawn_lists_contain_golem", StoneGolemGameTests::biomeSpawnListsContainGolem);
         add("spawn_rules_require_stone_and_cave", StoneGolemGameTests::spawnRulesRequireStoneAndCave);
     }
@@ -296,5 +305,81 @@ public final class StoneGolemGameTests {
         helper.assertFalse(StoneGolem.checkStoneGolemSpawnRules(type, level, EntitySpawnReason.NATURAL, pos, level.getRandom()),
                 "spawn must require stone below");
         helper.succeed();
+    }
+
+    // --- Building ---------------------------------------------------------------------------------------------------
+
+    /** Stone T (body + arms) with the head spot free, centred on x = 4, z = 4. */
+    private static void buildBody(GameTestHelper helper) {
+        for (BlockPos pos : new BlockPos[] {new BlockPos(4, 1, 4), new BlockPos(4, 2, 4), new BlockPos(3, 2, 4), new BlockPos(5, 2, 4)}) {
+            helper.setBlock(pos, Blocks.STONE);
+        }
+    }
+
+    /** Places a block like a real player click (goes through the loaders' placement hooks). */
+    private static void placeAsPlayer(GameTestHelper helper, ServerPlayer player, BlockPos on, ItemStack stack) {
+        BlockPos absolute = helper.absolutePos(on);
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(absolute).add(0, 0.5, 0), Direction.UP, absolute, false);
+        player.gameMode.useItemOn(player, helper.getLevel(), stack, InteractionHand.MAIN_HAND, hit);
+    }
+
+    private static List<StoneGolem> golems(GameTestHelper helper) {
+        return helper.getLevel().getEntitiesOfClass(StoneGolem.class, new AABB(helper.absolutePos(CENTER)).inflate(8));
+    }
+
+    public static void buildGolemByPlacingHead(GameTestHelper helper) {
+        buildBody(helper);
+        // Plants next to the leg must not prevent building (unlike vanilla golem patterns).
+        helper.setBlock(new BlockPos(3, 1, 4), Blocks.SHORT_GRASS);
+        helper.setBlock(new BlockPos(5, 1, 4), Blocks.POPPY);
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.CREATIVE);
+        placeAsPlayer(helper, player, new BlockPos(4, 2, 4), new ItemStack(Items.DIAMOND_BLOCK));
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(golems(helper).size() == 1, "placing the diamond block must build a golem"))
+                .thenExecute(() -> {
+                    StoneGolem golem = golems(helper).getFirst();
+                    helper.assertTrue(golem.isPlayerCreated(), "built golem must be player-created");
+                    helper.assertBlockPresent(Blocks.AIR, new BlockPos(4, 3, 4));
+                    helper.assertBlockPresent(Blocks.AIR, new BlockPos(4, 2, 4));
+                    helper.assertBlockPresent(Blocks.AIR, new BlockPos(3, 2, 4));
+                    helper.assertBlockPresent(Blocks.AIR, new BlockPos(4, 1, 4));
+                })
+                .thenWaitUntil(() -> assertState(helper, golems(helper).getFirst(), GolemState.ACTIVE))
+                .thenSucceed();
+    }
+
+    public static void wrongShapeBuildsNothing(GameTestHelper helper) {
+        // No arms: just a column of stone.
+        helper.setBlock(new BlockPos(4, 1, 4), Blocks.STONE);
+        helper.setBlock(new BlockPos(4, 2, 4), Blocks.STONE);
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.CREATIVE);
+        placeAsPlayer(helper, player, new BlockPos(4, 2, 4), new ItemStack(Items.DIAMOND_BLOCK));
+        helper.startSequence()
+                .thenIdle(5)
+                .thenExecute(() -> {
+                    helper.assertTrue(golems(helper).isEmpty(), "an incomplete shape must not build a golem");
+                    helper.assertBlockPresent(Blocks.DIAMOND_BLOCK, new BlockPos(4, 3, 4));
+                })
+                .thenSucceed();
+    }
+
+    public static void builtGolemGuardsPlayers(GameTestHelper helper) {
+        buildBody(helper);
+        helper.setBlock(new BlockPos(4, 3, 4), Blocks.DIAMOND_BLOCK);
+        StoneGolem golem = StoneGolemBuilding.tryBuild(helper.getLevel(), helper.absolutePos(new BlockPos(4, 3, 4)));
+        helper.assertTrue(golem != null, "tryBuild must build a golem from a complete shape");
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        Zombie monster = helper.spawn(EntityTypes.HUSK, new BlockPos(4, 1, 7));
+        monster.setNoAi(true);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertState(helper, golem, GolemState.ACTIVE))
+                .thenExecute(() -> {
+                    // A player's hit does not turn a built golem against players.
+                    golem.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(player), 1.0F);
+                    helper.assertFalse(golem.canAttack(player), "built golem must never attack players");
+                })
+                .thenWaitUntil(() -> helper.assertTrue(golem.getTarget() == monster, "built golem must hunt monsters, target: " + golem.getTarget()))
+                .thenSucceed();
     }
 }

@@ -4,8 +4,8 @@
 
 ```bash
 ./gradlew build                        # muss grün sein, ohne Compiler-Warnungen
-./gradlew :fabric:runGametest          # Server-GameTests Fabric   → "All 12 required tests passed"
-./gradlew :neoforge:runGameTestServer  # Server-GameTests NeoForge → "All 12 required tests passed"
+./gradlew :fabric:runGametest          # Server-GameTests Fabric   → "All 15 required tests passed"
+./gradlew :neoforge:runGameTestServer  # Server-GameTests NeoForge → "All 15 required tests passed"
 ./gradlew :fabric:runClientGametest    # Client-Smoke-Test (öffnet kurz ein Fenster)
 ```
 
@@ -45,6 +45,11 @@ Starten mit `./gradlew :fabric:runClient` bzw. `./gradlew :neoforge:runClient`, 
 - [ ] Die Felsen versinken langsam, du fällst herunter und nimmst normalen Fallschaden (Federfall/Wasser helfen)
 - [ ] Bei der Vorwarnung zur Seite gehen → die Felsen verfehlen dich
 - [ ] Nächste Beschwörung frühestens nach ~10 s; näher als 4 Blöcke gibt es stattdessen Bodenschlag/Stampfer
+
+### Golem bauen (Java)
+- [ ] Im Überlebensmodus 4 Stein als T setzen (2 übereinander, links und rechts je einer an den oberen), dann einen Diamantblock oben drauf → die Blöcke verschwinden, der Golem steht auf
+- [ ] Mit Gras/Blumen neben dem Bein klappt es auch; ohne Arme (nur Säule) passiert nichts, der Diamantblock bleibt stehen
+- [ ] Gebauter Golem: schlagen → er greift nicht an; Zombies/Skelette in der Nähe werden angegriffen; seine Felsen werfen keine Spieler hoch; er schläft nicht wieder ein
 
 ### Waffen-Schwäche (Tags)
 - [ ] Eisenspitzhacke vs. Eisenschwert auf zwei frische Golems (je ein Schlag nach dem Erwachen): Spitzhacke nimmt deutlich mehr Leben

@@ -5,9 +5,11 @@ Standalone neutral mob with dormant/awaken/active/settle cycle, ground stomp, ta
 
 ## Phase 2 — notes only, starts after approval
 
-### Tameable golem (player-built)
-- The player builds a golem from stone blocks plus a **Golem Core** (the phase-1 drop gets its purpose here).
-- Open questions: build pattern (vanilla-style block pattern vs. ritual item), allegiance (follow/guard/stay commands), healing (repair with stone?), whether a built golem can still go dormant (e.g. as a "guard post" mode).
+### Tameable golem (player-built) — first step done
+- Done (Java): build from four stone + a block of diamond (T shape, head last) → guardian golem that never attacks
+  players, never sleeps, hunts monsters. Bedrock port pending.
+- Still open: a purpose for the **Golem Core** (e.g. upgrade or heal a built golem), commands (follow/guard/stay),
+  healing (repair with stone?), an optional "guard post" mode in which a built golem rests as a boulder.
 - Must not be an Iron Golem clone: keep the dormant boulder identity.
 
 ### Biome variants (data-driven)
