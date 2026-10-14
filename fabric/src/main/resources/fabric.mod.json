@@ -7,6 +7,11 @@
     "authors": [
         "${mod_author}"
     ],
+    "contact": {
+        "homepage": "https://github.com/Ariakan79/StoneGolem",
+        "sources": "https://github.com/Ariakan79/StoneGolem",
+        "issues": "https://github.com/Ariakan79/StoneGolem/issues"
+    },
     "license": "${license}",
     "icon": "${mod_id}.png",
     "environment": "*",
@@ -21,7 +26,8 @@
             "eu.ariakan.stonegolem.gametest.StoneGolemFabricGameTests"
         ],
         "fabric-client-gametest": [
-            "eu.ariakan.stonegolem.client.gametest.StoneGolemClientGameTest"
+            "eu.ariakan.stonegolem.client.gametest.StoneGolemClientGameTest",
+            "eu.ariakan.stonegolem.client.gametest.StoneGolemShowcase"
         ]
     },
     "depends": {

@@ -21,6 +21,9 @@ public class StoneGolemClientGameTest implements FabricClientGameTest {
 
     @Override
     public void runTest(ClientGameTestContext context) {
+        if (System.getProperty("stonegolem.showcase") != null) {
+            return; // showcase run: only StoneGolemShowcase
+        }
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             world.getServer().runCommand("time set noon");
             world.getServer().runCommand("weather clear");

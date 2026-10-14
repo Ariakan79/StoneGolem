@@ -1,25 +1,56 @@
 # Stone Golem
 
-An ancient, sluggish guardian of stone for Minecraft **26.3** — for **Fabric** and **NeoForge**.
+**An ancient guardian sleeps in the stone. Wake it, and the earth itself rises against you.**
 
-It sleeps as a mossy boulder deep in stone caves and on rocky mountain slopes. Hit it, or mine stone or ore right next to it, and it slowly heaves itself up. It towers about 5.4 blocks tall, twice an iron golem, and is neutral to everyone except whoever attacked it: two-fisted ground slams, a telegraphed stomp that throws everything around it into the air, and from a distance it calls up great rocks under its target that hurl it 8 blocks high before sinking back into the earth. Swords and arrows barely scratch it — bring a pickaxe.
+A new mob for **Minecraft Java 26.3** (Fabric and NeoForge) and **Minecraft Bedrock 1.26.50+** (add-on for phones, tablets, consoles and Windows).
 
-Free and donation-funded. Code and assets are MIT-licensed (see [LICENSE](LICENSE)).
+![The Stone Golem calls rock pillars out of the meadow](docs/media/rock_pillars.gif)
+
+▶ **[Watch the showcase video](docs/media/showcase.mp4)** (22 s)
+
+## What it does
+
+You find it as a mossy boulder, deep in stone caves or on rocky mountain slopes. Hit it, or mine stone right next to it, and it slowly heaves itself up: a 5½-block colossus, twice the height of an iron golem.
+
+| | |
+|---|---|
+| ![Dormant boulder](docs/media/dormant_boulder.jpg) | ![Rock summon](docs/media/rock_summon.jpg) |
+| **Dormant.** It sleeps as a boulder: no movement, no sound. | **Rock summon.** From a distance it raises one hand; the ground beneath you crumbles… |
+| ![Rock pillars erupt](docs/media/rocks_side.jpg) | ![Slow motion](docs/media/rocks_slow_motion.jpg) |
+| **…and stone pillars burst out of the earth**, hurling you 8 blocks into the air before they sink back. Step aside in time and they miss. | The fall hurts: bring feather falling, water or quick reflexes. |
+| ![Ground stomp](docs/media/ground_stomp.jpg) | ![Fight](docs/media/fight.jpg) |
+| **Ground stomp.** Up close it leans back, raises both arms and smashes the ground, throwing everything around it into the air. | **Against a crowd** it mixes pillars, stomps and ground slams — two fists into the ground right in front of it. |
+
+![Size comparison with an iron golem and a villager](docs/media/size_comparison.jpg)
 
 ## Features
 
-- **Dormant → awakening → active → settling**: a synchronized state machine with matching animations. While dormant the golem does not move, look around or make a sound. It stands up in about 1.25 s (invulnerable meanwhile) and settles down again after 30 s without a target.
-- **Wakes up** when a player attacks it or breaks stone/ore (`#stonegolem:wakes_stone_golem`) within 4 blocks.
-- **Ground slam** (melee): both fists up, impact 0.4 s later in front of it — 12 damage (6 hearts on Normal), only if the target is still in reach.
-- **Ground stomp**: 0.75 s wind-up, 3-block area damage, launches entities, block particles of the ground, 8 s cooldown.
-- **Rock summon** (targets 4–16 blocks away): one hand rises while the ground under the target crumbles (0.9 s warning), then one large and two smaller rocks erupt, throw everything on them ~8 blocks up and slowly sink away; 10 s cooldown. The fall hurts.
-- **Weakness by tags, not hard-coded items**: weapons in `#stonegolem:effective_against_stone_golem` (pickaxes) deal ×2, weapons in `#stonegolem:ineffective_against_stone_golem` (swords) and damage types in `#stonegolem:ineffective_against_stone_golem` (projectiles) deal ×0.5.
-- Immune to knockback, fall damage and drowning.
-- **Spawning**: rare, one at a time; in covered caves below Y 40 in every biome of `#stonegolem:spawns_stone_golem` and on stone surfaces in `#stonegolem:stone_golem_surface_spawns` (mountains, stony shores, windswept hills).
-- **Drops**: 4–8 cobblestone, 0–2 moss blocks, ~10 % (+ Looting) **Golem Core**, ~10 XP.
-- English and German translations.
+- **Neutral, until provoked.** It only fights whoever attacked it, and settles back into a boulder after 30 seconds without a target.
+- **Wakes up** when attacked or when someone mines stone or ore within 4 blocks.
+- **Three attacks**: ground slam (6 hearts on Normal), telegraphed ground stomp (area damage, 8 s cooldown) and the rock summon (4–16 blocks, 10 s cooldown).
+- **Bring a pickaxe.** Pickaxes deal double damage; swords and arrows only half. Driven by tags, so packs and other mods can change what counts.
+- Immune to knockback, fall damage and drowning; invulnerable while standing up.
+- **Spawns rarely**, one at a time: in stone caves below Y 40 and on stony mountain surfaces.
+- **Drops** cobblestone, moss and, rarely (more with Looting), a pulsing **Golem Core** — the key to a future update.
+- English and German.
 
-## Building
+## Download and install
+
+Releases will be published here and on Modrinth and CurseForge.
+
+- **Fabric**: install [Fabric Loader](https://fabricmc.net/) and [Fabric API](https://modrinth.com/mod/fabric-api), then put `stonegolem-fabric-26.3-<version>.jar` into your `mods` folder.
+- **NeoForge**: put `stonegolem-neoforge-26.3-<version>.jar` into your `mods` folder.
+- **Bedrock**: open `StoneGolem-<version>.mcaddon` on your device, then enable *Stone Golem* under *Behavior Packs* when creating or editing a world.
+
+Spawn it with its spawn egg (creative inventory) or `/summon stonegolem:stone_golem`.
+
+## License
+
+Free and open: code and assets are under the [MIT license](LICENSE). Modpacks, videos and forks are welcome.
+
+---
+
+## For developers
 
 Requires nothing but a JDK to start Gradle; Gradle downloads JDK 25 for itself and the build (see `gradle/gradle-daemon-jvm.properties`).
 
@@ -27,21 +58,22 @@ Requires nothing but a JDK to start Gradle; Gradle downloads JDK 25 for itself a
 ./gradlew build                        # jars in fabric/build/libs and neoforge/build/libs
 ./gradlew :fabric:runClient            # or :neoforge:runClient
 ./gradlew :fabric:runGametest          # headless game tests (also :neoforge:runGameTestServer)
-./gradlew :fabric:runClientGametest    # scripted client smoke test with screenshots
+./gradlew :fabric:runClientGametest    # scripted client smoke test
+./gradlew :fabric:runClientShowcase    # renders the README media (see StoneGolemShowcase)
+python3 bedrock/build.py               # Bedrock add-on -> bedrock/dist/*.mcaddon
 ```
 
-See [TESTING.md](TESTING.md) for the manual checklist and [ROADMAP.md](ROADMAP.md) for what comes next.
-
-## Project layout
+See [TESTING.md](TESTING.md) for the manual checklist, [ROADMAP.md](ROADMAP.md) for what comes next and [bedrock/README.md](bedrock/README.md) for the Bedrock edition.
 
 | Module     | Contents |
 |------------|----------|
 | `common`   | All gameplay: entity, AI, state machine, model, animations, renderer, tags, loot, assets, game tests. Vanilla code only. |
-| `fabric`   | Entry points, registration, biome modification, events, test wrappers. |
+| `fabric`   | Entry points, registration, biome modification, events, test wrappers, showcase. |
 | `neoforge` | Entry points, registration, biome modifier type, events, test registration. |
+| `bedrock`  | Behavior and resource pack, Script API code, build script, GameTests. |
 
-- **Balancing**: every number lives in [`StoneGolemBalance`](common/src/main/java/eu/ariakan/stonegolem/config/StoneGolemBalance.java).
+- **Balancing**: every Java number lives in [`StoneGolemBalance`](common/src/main/java/eu/ariakan/stonegolem/config/StoneGolemBalance.java), every Bedrock number in [`bedrock/balance.json`](bedrock/balance.json).
 - **Loader abstraction**: `IRegistrar` and `IPlatformHelper` services (Java `ServiceLoader`), implemented per loader.
-- **Art**: [`tools/generate_textures.py`](tools/generate_textures.py) produces the first-draft textures. The model in `StoneGolemModel` uses Blockbench-style part names (`body`, `head`, `left_arm`, `right_arm`, `left_leg`, `right_leg`); animations in `StoneGolemAnimations` follow Blockbench's Java export format, so both can be replaced by Blockbench exports.
+- **Art**: [`tools/generate_textures.py`](tools/generate_textures.py) produces the first-draft textures. The model uses Blockbench-style part names (`body`, `head`, `left_arm`, `right_arm`, `left_leg`, `right_leg`); animations follow Blockbench's Java export format.
 
 Built on [jaredlll08/MultiLoader-Template](https://github.com/jaredlll08/MultiLoader-Template). Mod ID `stonegolem`, package `eu.ariakan.stonegolem`.

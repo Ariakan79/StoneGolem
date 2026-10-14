@@ -47,6 +47,18 @@ loom {
             vmArg('-Dfabric.client.gametest')
             runDir('runs/clientGametest')
         }
+        // Scripted showcase for README screenshots and videos: ./gradlew :fabric:runClientShowcase
+        clientShowcase {
+            client()
+            setConfigName('Fabric Client Showcase')
+            ideConfigGenerated(true)
+            vmArg('-Dfabric.client.gametest')
+            vmArg('-Dstonegolem.showcase')
+            if (project.hasProperty('showcaseFrames')) {
+                vmArg("-Dstonegolem.showcase.frames=${project.property('showcaseFrames')}")
+            }
+            runDir('runs/clientShowcase')
+        }
     }
 }
 

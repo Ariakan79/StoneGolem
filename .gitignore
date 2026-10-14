@@ -26,3 +26,6 @@ runs
 # Bedrock build output
 bedrock/build
 bedrock/dist
+
+# Local media previews
+media-preview/
