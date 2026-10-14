@@ -19,6 +19,11 @@
           ],
           "default": "dormant",
           "client_sync": true
+        },
+        "stonegolem:built": {
+          "type": "bool",
+          "default": false,
+          "client_sync": false
         }
       }
     },
@@ -45,7 +50,58 @@
       },
       "stonegolem:targeting": {
         "minecraft:behavior.hurt_by_target": {
-          "priority": 1
+          "priority": 1,
+          "entity_types": {
+            "filters": {
+              "none_of": [
+                {
+                  "all_of": [
+                    {
+                      "test": "bool_property",
+                      "subject": "self",
+                      "domain": "stonegolem:built"
+                    },
+                    {
+                      "test": "is_family",
+                      "subject": "other",
+                      "value": "player"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "minecraft:behavior.nearest_attackable_target": {
+          "priority": 3,
+          "must_see": true,
+          "must_reach": false,
+          "reselect_targets": true,
+          "entity_types": [
+            {
+              "filters": {
+                "all_of": [
+                  {
+                    "test": "bool_property",
+                    "subject": "self",
+                    "domain": "stonegolem:built"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "monster"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "operator": "not",
+                    "value": "creeper"
+                  }
+                ]
+              },
+              "max_dist": 16
+            }
+          ]
         }
       },
       "stonegolem:mobile": {
@@ -106,6 +162,11 @@
             "event": "stonegolem:settled"
           }
         }
+      },
+      "stonegolem:wild": {
+        "minecraft:despawn": {
+          "despawn_from_distance": {}
+        }
       }
     },
     "components": {
@@ -141,9 +202,6 @@
       },
       "minecraft:experience_reward": {
         "on_death": "query.last_hit_by_player ? {{EXPERIENCE}} : 0"
-      },
-      "minecraft:despawn": {
-        "despawn_from_distance": {}
       },
       "minecraft:conditional_bandwidth_optimization": {},
       "minecraft:damage_sensor": {
@@ -224,7 +282,8 @@
       "minecraft:entity_spawned": {
         "add": {
           "component_groups": [
-            "stonegolem:dormant"
+            "stonegolem:dormant",
+            "stonegolem:wild"
           ]
         }
       },
@@ -403,6 +462,16 @@
             }
           }
         ]
+      },
+      "stonegolem:become_built": {
+        "remove": {
+          "component_groups": [
+            "stonegolem:wild"
+          ]
+        },
+        "set_property": {
+          "stonegolem:built": true
+        }
       }
     }
   }

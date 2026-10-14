@@ -27,7 +27,16 @@ The core cycle is data-driven (entity events, damage sensor and timers): hits wa
 summon, waking by mining, returning to dormancy and the Golem Core drop. So even if scripting fails on a device, the
 golem still wakes up and fights (verified by running the GameTests against a pack without its script module).
 
+## Building a golem
+
+Same recipe as on Java: four stone in a T (two stacked, one arm on each side) and a block of diamond on top, placed
+last by a player. Next to the leg may be anything water flows through (grass, flowers, saplings, torches, thin snow).
+The blocks turn into a guardian golem (entity property `stonegolem:built`): it never attacks players, its stomp and
+rock pillars spare them, it never goes back to sleep, does not despawn and hunts monsters (not creepers) nearby.
+Blocks are fixed to `minecraft:stone` / `minecraft:diamond_block` on Bedrock (no block tags for add-ons).
+
 Diagnostics (cheats on): `/scriptevent stonegolem:state` prints state, target, cooldowns and the pack version to chat.
+`/scriptevent stonegolem:built` shows whether the nearest golem is a built guardian.
 No answer means the script is not running; then enable *Settings → Creator → Content Log GUI* to see why.
 
 ## Differences to the Java edition
@@ -52,6 +61,10 @@ fill 100 -61 100 123 -61 123 stone
 structure save stonegolem:arena 100 -61 100 123 -42 123 disk
 execute positioned 140 -60 140 run gametest runset stonegolem
 ```
+
+Built guardian golems are persistent; before re-running the suite remove leftovers with
+`kill @e[type=stonegolem:stone_golem]`. Use `setBlockType` on the dimension (`test.worldBlockLocation`) rather than
+`test.setBlockType`, which fails on BDS ("Could not setBlock").
 
 Simulated players are invisible to entity queries in the GameTest framework, so the rock test uses a husk as target;
 the real player's flight height is a manual check.

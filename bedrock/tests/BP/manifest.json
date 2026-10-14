@@ -4,16 +4,55 @@
     "name": "Stone Golem Tests",
     "description": "GameTests for the Stone Golem Bedrock edition. Development only (needs the Beta APIs experiment); not part of the release.",
     "uuid": "21b5a543-34fc-4767-80ad-b2c7df5b8f32",
-    "version": [0, 1, 4],
-    "min_engine_version": [1, 26, 50]
+    "version": [
+      0,
+      1,
+      5
+    ],
+    "min_engine_version": [
+      1,
+      26,
+      50
+    ]
   },
   "modules": [
-    { "type": "data", "uuid": "1a1f69d5-d339-4dac-9af7-79f963a53b10", "version": [0, 1, 4] },
-    { "type": "script", "language": "javascript", "entry": "scripts/tests.js", "uuid": "0f808203-d143-4bac-915b-95c609ba0c6a", "version": [0, 1, 4] }
+    {
+      "type": "data",
+      "uuid": "1a1f69d5-d339-4dac-9af7-79f963a53b10",
+      "version": [
+        0,
+        1,
+        5
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "entry": "scripts/tests.js",
+      "uuid": "0f808203-d143-4bac-915b-95c609ba0c6a",
+      "version": [
+        0,
+        1,
+        5
+      ]
+    }
   ],
   "dependencies": [
-    { "uuid": "0221ba61-4882-42c5-a7d7-5d85c680236f", "version": [0, 1, 4] },
-    { "module_name": "@minecraft/server", "version": "2.10.0" },
-    { "module_name": "@minecraft/server-gametest", "version": "1.0.0-beta" }
+    {
+      "uuid": "0221ba61-4882-42c5-a7d7-5d85c680236f",
+      "version": [
+        0,
+        1,
+        5
+      ]
+    },
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.10.0"
+    },
+    {
+      "module_name": "@minecraft/server-gametest",
+      "version": "1.0.0-beta"
+    }
   ]
 }

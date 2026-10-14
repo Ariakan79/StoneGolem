@@ -31,7 +31,7 @@ Like an iron golem, you can build a Stone Golem: **four stone in a T** (two stac
 
 ![Building a Stone Golem](docs/media/build_golem.gif)
 
-A built golem is your **guardian**: it never attacks players (not even when hit), never goes back to sleep, does not despawn, and hunts monsters around it with all three attacks — its rock pillars leave players alone. *(Java edition; coming to Bedrock next.)*
+A built golem is your **guardian**: it never attacks players (not even when hit), never goes back to sleep, does not despawn, and hunts monsters around it with all three attacks — its rock pillars leave players alone.
 
 ## Features
 

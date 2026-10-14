@@ -1,11 +1,14 @@
 // Stone Golem (Bedrock edition): state machine, target tracking, ground stomp, rock summon, waking and Golem Core drop.
 // Mirrors the Java edition's StoneGolem; all numbers come from balance.js (generated from bedrock/balance.json).
-import { EntityDamageCause, GameMode, ItemStack, Player, system, world } from "@minecraft/server";
+import { EntityDamageCause, GameMode, ItemStack, LiquidType, Player, system, world } from "@minecraft/server";
 import { B } from "./balance.js";
 
 const GOLEM = "stonegolem:stone_golem";
 const ROCK = "stonegolem:rising_rock";
 const STATE = "stonegolem:state";
+const BUILT = "stonegolem:built";
+const BODY_BLOCK = "minecraft:stone";
+const HEAD_BLOCK = "minecraft:diamond_block";
 const ROCK_SCALE = "stonegolem:scale";
 const GOLEM_HALF_WIDTH = 0.9;
 const ROCK_RADIUS = 0.75;
@@ -74,6 +77,10 @@ export function wakeUp(golem) {
   return false;
 }
 
+function isBuilt(golem) {
+  return golem.getProperty(BUILT) === true;
+}
+
 function isAttackablePlayer(entity) {
   if (!(entity instanceof Player)) return true;
   const mode = entity.getGameMode();
@@ -85,7 +92,15 @@ function distance(a, b) {
 }
 
 function resolveTarget(golem, d) {
-  if (!d.targetId) return undefined;
+  if (!d.targetId) {
+    // Built golems guard the area: the closest monster (never a creeper) becomes the target of their special attacks;
+    // melee targeting is data-driven (behavior.nearest_attackable_target with the same rule).
+    const monster = isBuilt(golem) ? golem.dimension.getEntities({
+      location: golem.location, maxDistance: 16, families: ["monster"], excludeFamilies: ["creeper"], closest: 1,
+    })[0] : undefined;
+    if (!monster) return undefined;
+    d.targetId = monster.id;
+  }
   const target = world.getEntity(d.targetId);
   const valid = target && target.isValid && target.dimension.id === golem.dimension.id
     && (target.getComponent("minecraft:health")?.currentValue ?? 0) > 0
@@ -137,8 +152,9 @@ function debris(dimension, center, radius, count) {
   }
 }
 
-function canBeHit(entity) {
+function canBeHit(entity, sparePlayers = false) {
   if (entity.typeId === GOLEM || entity.typeId === ROCK) return false;
+  if (sparePlayers && entity instanceof Player) return false;
   if (!entity.getComponent("minecraft:health")) return false;
   return isAttackablePlayer(entity);
 }
@@ -149,7 +165,7 @@ function performStomp(golem, d) {
   d.stompCooldown = B.STOMP_COOLDOWN_TICKS;
   const reach = B.STOMP_RADIUS + GOLEM_HALF_WIDTH;
   const victims = golem.dimension.getEntities({ location: golem.location, maxDistance: reach + 0.5 })
-    .filter(e => canBeHit(e) && Math.abs(e.location.y - golem.location.y) <= 1.5);
+    .filter(e => canBeHit(e, isBuilt(golem)) && Math.abs(e.location.y - golem.location.y) <= 1.5);
   for (const victim of victims) {
     const dx = victim.location.x - golem.location.x;
     const dz = victim.location.z - golem.location.z;
@@ -168,11 +184,11 @@ function performStomp(golem, d) {
   golem.dimension.playSound("stonegolem.stomp", golem.location, { volume: 2.0 });
 }
 
-function spawnRock(dimension, location, scale) {
+function spawnRock(dimension, location, scale, sparePlayers) {
   const rock = dimension.spawnEntity(ROCK, location);
   rock.setProperty(ROCK_SCALE, scale);
   rock.setRotation({ x: 0, y: Math.random() * 360 });
-  rocks.set(rock.id, { age: 0, launched: new Set() });
+  rocks.set(rock.id, { age: 0, launched: new Set(), sparePlayers });
 }
 
 function summonRocks(golem, d) {
@@ -180,14 +196,14 @@ function summonRocks(golem, d) {
   const center = d.summonPos;
   d.summonPos = undefined;
   if (!center) return;
-  spawnRock(golem.dimension, center, 1.0);
+  spawnRock(golem.dimension, center, 1.0, isBuilt(golem));
   for (let i = 0; i < B.SUMMON_EXTRA_ROCKS; i++) {
     const angle = Math.random() * Math.PI * 2;
     const dist = 1.6 + Math.random() * 0.6;
     const ground = findGround(golem.dimension, { x: center.x + Math.cos(angle) * dist, y: center.y + 1, z: center.z + Math.sin(angle) * dist });
     if (ground) {
       spawnRock(golem.dimension, { x: center.x + Math.cos(angle) * dist, y: ground.y, z: center.z + Math.sin(angle) * dist },
-        0.55 + Math.random() * 0.15);
+        0.55 + Math.random() * 0.15, isBuilt(golem));
     }
   }
 }
@@ -210,7 +226,7 @@ function tickGolem(golem) {
       break;
     case "active": {
       if (!target) {
-        if (++d.idleTicks >= B.RETURN_TO_DORMANT_TICKS) setState(golem, "settling");
+        if (!isBuilt(golem) && ++d.idleTicks >= B.RETURN_TO_DORMANT_TICKS) setState(golem, "settling");
         break;
       }
       d.idleTicks = 0;
@@ -269,7 +285,7 @@ function tickRock(rock) {
     const radius = ROCK_RADIUS * scale;
     const nearby = rock.dimension.getEntities({ location: rock.location, maxDistance: radius + 1.5 });
     for (const entity of nearby) {
-      if (r.launched.has(entity.id) || !canBeHit(entity)) continue;
+      if (r.launched.has(entity.id) || !canBeHit(entity, r.sparePlayers)) continue;
       if (entity instanceof Player && entity.isFlying) continue;
       const dx = entity.location.x - rock.location.x;
       const dz = entity.location.z - rock.location.z;
@@ -300,9 +316,57 @@ system.runInterval(() => {
   }
 }, 1);
 
+// --- Building -------------------------------------------------------------------------------------------------------
+
+/**
+ * Free space next to the leg: air, or something water flows through (grass, flowers, saplings, torches, thin snow).
+ * Matches the Java edition's "no collision" rule; canBeDestroyedByLiquidSpread is false for most plants on Bedrock.
+ */
+function isFree(block) {
+  if (!block || block.isLiquid) return false;
+  if (block.isAir) return true;
+  try {
+    return !block.isLiquidBlocking(LiquidType.Water);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Builds a guardian golem if the head just placed at {@code head} completes the T:
+ * stone body (two stacked) with one stone arm on each side, block of diamond on top, free space beside the leg.
+ */
+export function tryBuild(dimension, head) {
+  const at = (dx, dy, dz) => dimension.getBlock({ x: head.x + dx, y: head.y + dy, z: head.z + dz });
+  if (at(0, 0, 0)?.typeId !== HEAD_BLOCK || at(0, -1, 0)?.typeId !== BODY_BLOCK || at(0, -2, 0)?.typeId !== BODY_BLOCK) {
+    return undefined;
+  }
+  for (const [ax, az] of [[1, 0], [0, 1]]) {
+    const arms = [at(ax, -1, az), at(-ax, -1, az * -1)];
+    const free = [at(ax, 0, az), at(-ax, 0, -az), at(ax, -2, az), at(-ax, -2, -az)];
+      if (arms.every(b => b?.typeId === BODY_BLOCK) && free.every(isFree)) {
+      const cells = [at(0, 0, 0), at(0, -1, 0), at(0, -2, 0), ...arms, ...free.filter(b => !b.isAir)];
+      for (const block of cells) {
+        dimension.spawnParticle("stonegolem:stone_debris", block.center());
+        block.setType("minecraft:air");
+      }
+      const golem = dimension.spawnEntity(GOLEM, { x: head.x + 0.5, y: head.y - 2, z: head.z + 0.5 });
+      golem.triggerEvent("stonegolem:become_built"); // sets stonegolem:built and makes it persistent
+      wakeUp(golem);
+      return golem;
+    }
+  }
+  return undefined;
+}
+
+world.afterEvents.playerPlaceBlock.subscribe(event => {
+  if (event.block.typeId === HEAD_BLOCK) tryBuild(event.dimension, event.block.location);
+});
+
 // --- Events ----------------------------------------------------------------------------------------------------------
 
 function retaliate(golem, attacker) {
+  if (isBuilt(golem) && attacker instanceof Player) return;
   if (attacker && attacker.isValid && attacker.typeId !== GOLEM && isAttackablePlayer(attacker)) {
     data(golem).targetId = attacker.id;
   }
@@ -368,8 +432,16 @@ world.afterEvents.entityRemove.subscribe(event => {
  * /scriptevent stonegolem:wake wakes it.
  */
 system.afterEvents.scriptEventReceive.subscribe(event => {
+  if (!event.id.startsWith("stonegolem:")) return;
   const source = event.sourceEntity;
-  if (!source || !event.id.startsWith("stonegolem:")) return;
+  if (event.id === "stonegolem:try_build") {
+    // message: "x y z" of the head block (used by the GameTests, which run it from the server without an entity)
+    const [x, y, z] = event.message.split(" ").map(Number);
+    const built = tryBuild(source?.dimension ?? world.getDimension("overworld"), { x, y, z });
+    console.warn(`[stonegolem] try_build ${built ? "built" : "nothing"}`);
+    return;
+  }
+  if (!source) return;
   const golem = source.dimension.getEntities({ type: GOLEM, location: source.location, closest: 1 })[0];
   const reply = message => (source instanceof Player ? source.sendMessage(message) : console.warn(message));
   if (!golem) {
@@ -377,6 +449,7 @@ system.afterEvents.scriptEventReceive.subscribe(event => {
     return;
   }
   if (event.id === "stonegolem:wake") wakeUp(golem);
+  if (event.id === "stonegolem:built") reply(`[Stone Golem] built=${isBuilt(golem)}`);
   if (event.id === "stonegolem:state") {
     const d = data(golem);
     const target = d.targetId ? world.getEntity(d.targetId) : undefined;

@@ -1,7 +1,7 @@
 // GameTests for the Stone Golem Bedrock edition. Run on a dev world with the Beta APIs experiment:
 //   /gametest runset stonegolem
 // They exercise the real paths (a simulated player hits, mines and gets thrown) instead of internal shortcuts.
-import { EntityDamageCause, GameMode, ItemStack } from "@minecraft/server";
+import { Direction, EntityDamageCause, GameMode, ItemStack } from "@minecraft/server";
 import * as gt from "@minecraft/server-gametest";
 
 const ARENA = "stonegolem:arena"; // 24x12x24, stone floor at y = 0 (saved into the test world, see bedrock/README.md)
@@ -172,3 +172,86 @@ register("loot_drops_cobblestone", test => {
     .thenWait(() => test.assertItemEntityPresent("minecraft:cobblestone", CENTER, 3, true))
     .thenSucceed();
 });
+
+// --- Building ----------------------------------------------------------------------------------------------------------
+
+// test.setBlockType fails ("Could not setBlock") on this server; set the block through the dimension instead.
+function setBlock(test, type, pos) {
+  test.getDimension().setBlockType(test.worldBlockLocation(pos), type);
+}
+
+// Depending on how the server places the arena, its floor ends up at y = 0 or y = 1; build on top of it.
+function floorTop(test) {
+  for (let y = 1; y <= 3; y++) {
+    if (test.getDimension().getBlock(test.worldBlockLocation({ x: 12, y, z: 12 }))?.isAir) return y;
+  }
+  return 1;
+}
+
+/** Stone T at (12, y, 12): leg at y, body and arms at y + 1. Returns the head's relative position. */
+function buildBody(test, y) {
+  for (const p of [{ x: 12, y, z: 12 }, { x: 12, y: y + 1, z: 12 }, { x: 11, y: y + 1, z: 12 }, { x: 13, y: y + 1, z: 12 }]) {
+    setBlock(test, "minecraft:stone", p);
+  }
+  return { x: 12, y: y + 2, z: 12 };
+}
+
+function golemsNear(test) {
+  return test.getDimension().getEntities({ type: GOLEM, location: test.worldLocation(CENTER), maxDistance: 8 });
+}
+
+register("build_golem_by_placing_head", test => {
+  const y = floorTop(test);
+  const head = buildBody(test, y);
+  // Plants next to the leg must not prevent building.
+  setBlock(test, "minecraft:short_grass", { x: 11, y, z: 12 });
+  setBlock(test, "minecraft:poppy", { x: 13, y, z: 12 });
+  const player = test.spawnSimulatedPlayer({ x: 12, y, z: 15 }, "Builder", GameMode.Creative);
+  test.startSequence()
+    .thenExecuteAfter(5, () => player.useItemOnBlock(new ItemStack("minecraft:diamond_block"), { x: 12, y: y + 1, z: 12 }, Direction.Up))
+    .thenWait(() => test.assert(golemsNear(test).length === 1, "placing the diamond block must build a golem"))
+    .thenWait(() => test.assert(golemsNear(test)[0].getProperty("stonegolem:built") === true, "built golem must be marked as built"))
+    .thenExecute(() => {
+      test.assertBlockPresent("minecraft:air", head, true);
+      test.assertBlockPresent("minecraft:air", { x: 11, y: y + 1, z: 12 }, true);
+    })
+    .thenWait(() => test.assert(state(golemsNear(test)[0]) === "active", "built golem must stand up"))
+    .thenSucceed();
+});
+
+register("wrong_shape_builds_nothing", test => {
+  const y = floorTop(test);
+  setBlock(test, "minecraft:stone", { x: 12, y, z: 12 });
+  setBlock(test, "minecraft:stone", { x: 12, y: y + 1, z: 12 });
+  const player = test.spawnSimulatedPlayer({ x: 12, y, z: 15 }, "Builder2", GameMode.Creative);
+  test.startSequence()
+    .thenExecuteAfter(5, () => player.useItemOnBlock(new ItemStack("minecraft:diamond_block"), { x: 12, y: y + 1, z: 12 }, Direction.Up))
+    .thenExecuteAfter(10, () => {
+      test.assert(golemsNear(test).length === 0, "an incomplete shape must not build a golem");
+      test.assertBlockPresent("minecraft:diamond_block", { x: 12, y: y + 2, z: 12 }, true);
+    })
+    .thenSucceed();
+});
+
+register("built_golem_guards_players", test => {
+  const y = floorTop(test);
+  const headRel = buildBody(test, y);
+  setBlock(test, "minecraft:diamond_block", headRel);
+  const head = test.worldBlockLocation(headRel);
+  const player = test.spawnSimulatedPlayer({ x: 12, y, z: 14 }, "Friend", GameMode.Survival);
+  const monster = test.spawn("minecraft:husk", { x: 12, y, z: 7 });
+  monster.addEffect("slowness", 600, { amplifier: 255, showParticles: false });
+  let golem;
+  test.startSequence()
+    .thenExecuteAfter(2, () => test.getDimension().runCommand(`scriptevent stonegolem:try_build ${head.x} ${head.y} ${head.z}`))
+    .thenWait(() => test.assert(golemsNear(test).length === 1, "try_build must build a golem"))
+    .thenExecute(() => { golem = golemsNear(test)[0]; })
+    .thenWait(() => test.assert(state(golem) === "active", "waiting for the golem to stand up"))
+    .thenExecute(() => {
+      player.lookAtEntity(golem);
+      player.attackEntity(golem); // a friend's hit must not turn it against players
+    })
+    .thenWait(() => test.assert(!monster.isValid || health(monster) < 20, "built golem must attack the monster"))
+    .thenExecute(() => test.assert(health(player) === 20, `built golem hurt a player: health ${health(player)}`))
+    .thenSucceed();
+}, 600);
